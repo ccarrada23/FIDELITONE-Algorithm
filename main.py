@@ -436,7 +436,7 @@ if __name__ == "__main__":
     # fittest_location(graph, CSDVG70034_obj, dijkstra_map) #('C2_1', (0, 2, 0))
     # end = time.time()
     # print(end - start)
-    print(len(SKU_map))
+    # print(len(SKU_map))
     
     # fittest_location(graph, PK34024BAGr1_obj) # ('A_7', (0, 0, 0))
     
@@ -445,7 +445,7 @@ if __name__ == "__main__":
     # fittest_location(graph, CSSP40091C_obj) # ('J2_0', (0, 1, 0))
     
     # FULLY SATISFIED WITH THESE FITNESS VALUES 
-    # distances = dijkstra_helper(graph, graph.get_rack('A_0'))[0]
+    # distances = dijkstra_helper(graph, graph.get_rack('A_0'))[0] 
     
     
     
