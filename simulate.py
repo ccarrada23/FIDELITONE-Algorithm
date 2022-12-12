@@ -1,434 +1,474 @@
-# import simpy as sp
+import simpy as sp
 
-# import pandas as pd
+import pandas as pd
 
-# import random
+import random
 
-# import statistics
-# from SKUClass import *
- 
+import statistics
+from distanceFunction import *
 
-# #Constants
 
-# NUM_FORKLIFTS = 4
+#Constants
 
-# SIM_DAYS = 2 #Number of days simulated
+NUM_FORKLIFTS = 4
 
-# SIM_TIME = SIM_DAYS*9*60*60 #total time simulated in seconds, do not change
+SIM_DAYS = 100 #Number of days simulated
 
-# INBOUND_INTERVAL = 9*60*60 #Interval of new pallets coming in, daily.
+SIM_TIME = SIM_DAYS*9*60*60 #total time simulated in seconds, do not change
 
-# FORKLIFT_SPEED = 22/3 #ft/s, equals 5 mph
+INBOUND_INTERVAL = 9*60*60 #Interval of new pallets coming in, daily.
 
-# UNIT_DIST = 4 #every weight of distance corresponds to 4 ft
+FORKLIFT_SPEED = 22/3 #ft/s, equals 5 mph
 
-# INITIAL_SKUS = 40 #Actual might be 40
+UNIT_DIST = 4 #every weight of distance corresponds to 4 ft
 
-# PERIODIC_SKUS = 30
+INITIAL_SKUS = 40 #Actual might be 40
 
- 
+PERIODIC_SKUS = 30
 
-# #Lists used for tracking times (slotting/picking)
 
-# slotTimes = []
 
-# pickTimes = []
+#Lists used for tracking times (slotting/picking)
 
-# # slotLocs = {}
+slotTimes = []
 
- 
+pickTimes = []
 
-# rSlotTimes = []
+# slotLocs = {}
 
-# rPickTimes = []
 
-# # rSlotLocs = {}
 
- 
+rSlotTimes = []
 
-# #Gets list of orders and unique SKUs
+rPickTimes = []
 
-# dataframe = pd.read_excel("./data.XLSX")
+# rSlotLocs = {}
 
-# df = dataframe
 
- 
 
-# orderNum = df.order
+#Gets list of orders and unique SKUs
 
-# SKUNum = df.item
+dataframe = pd.read_excel("./data.xlsx")
+df = dataframe
 
-# orderNum = list(orderNum)
 
-# SKUNum = list(SKUNum)
 
-# orderList = []
+orderNum = df.order
 
- 
+SKUNum = df.item
 
-# checked_order = orderNum[0]
+orderNum = list(orderNum)
 
-# ordr = []
+SKUNum = list(SKUNum)
 
-# for i in range(0, len(SKUNum)):
+orderList = []
 
-#     if (orderNum[i] == checked_order):
 
-#         ordr.append(SKUNum[i])
 
-#     else:
+checked_order = orderNum[0]
 
-#         checked_order = orderNum[i]
+ordr = []
 
-#         orderList.append(ordr)
+for i in range(0, len(SKUNum)):
 
-#         ordr = []
+    if (orderNum[i] == checked_order):
 
-#         ordr.append(SKUNum[i])
+        ordr.append(SKUNum[i])
 
-# orderList.append(ordr)
+    else:
 
-# uniqueSKU = []
+        checked_order = orderNum[i]
 
-# for sku in SKUNum:
+        orderList.append(ordr)
 
-#     if sku not in uniqueSKU:
+        ordr = []
 
-#         uniqueSKU.append(sku)
+        ordr.append(SKUNum[i])
 
-# # print(len(uniqueSKU))
+orderList.append(ordr)
 
- 
+uniqueSKU = []
 
-# #############################WAREHOUSE OBJ######################################
+for sku in SKUNum:
 
-# class Warehouse(object): #create the warehouse
+    if sku not in uniqueSKU:
 
-#     def __init__(self, env, num_forklifts):
+        uniqueSKU.append(sku)
 
-#         self.env = env
+# print(len(uniqueSKU))
 
-#         self.forklift = sp.Resource(env, num_forklifts)
 
-#         self.slotLocs = {}
 
-#         #self.graph = graph #This needs to be added when stuff is combined
+#############################WAREHOUSE OBJ######################################
 
- 
+class Warehouse(object): #create the warehouse
 
-#     def slot(self, SKU,slottimeList):
+    def __init__(self, env, num_forklifts):
 
-#         #skuName = str(SKU)
-#         # if i know the skus and the racks they are in
-#         # then i can just to rack.distToInb for all the racks i get
-#         # so from a sku list at first, i need to get racks.
-#         # use the assign function to find the rack things are assigned to
-#         # 
-#         #Find SKU slot function here (basically the algorithm)
+        self.env = env
 
-#         djk_dist = random.randint(15,200) #dijkstra's path weight from inbound->slots
-#         # djk_dist = inbound to all the slots
-#         # 
-#         path_time = (djk_dist*UNIT_DIST)/FORKLIFT_SPEED
+        self.forklift = sp.Resource(env, num_forklifts)
 
-#         if self.env.now == 0:
+        self.slotLocs = {}
 
-#             yield self.env.timeout(0)
+        #self.graph = graph #This needs to be added when stuff is combined
 
-#         else:
 
-#             yield self.env.timeout(path_time)
 
-#         slottimeList.append(path_time)
+    def slot(self, SKU,slottimeList):
 
-#         #assign SKU
+        #skuName = str(SKU)
 
-#         # if (SKU not in slotLocs.keys()):
+        #Find SKU slot function here (basically the algorithm)
 
-#         #     slotLocs[SKU] = [slot]
+        djk_dist = find_dist_to_inb_fitness(sku) #dijkstra's path weight from inbound->slots
 
-#         # else:
+        path_time = (djk_dist*UNIT_DIST)/FORKLIFT_SPEED 
 
-#         #     slotLocs[SKU].append(slot)
+        if self.env.now == 0:
 
- 
+            yield self.env.timeout(0)
 
-#     def rand_slot(self, SKU, slottimeList):
+        else:
 
-#         #skuName = str(SKU)
+            yield self.env.timeout(path_time)
 
-#         #random select rack, rack row, and depth
+        slottimeList.append(path_time)
 
-#         #rack = random.choice(dict.keys()) #select a random rack
+        #assign SKU
 
-#         #rack_row = random.randrange(rack.rows)
+        # if (SKU not in slotLocs.keys()):
 
-#         #rack_col = random.randrange(rack.columns)
+        #     slotLocs[SKU] = [slot]
 
-#         djk_dist = random.randint(15,350) #dijkstra's path weight from inbound->random slot
+        # else:
 
-#         path_time = (djk_dist*UNIT_DIST)/FORKLIFT_SPEED
+        #     slotLocs[SKU].append(slot)
 
-#         if self.env.now == 0:
 
-#             yield self.env.timeout(0)
 
-#         else:
+    def rand_slot(self, SKU, slottimeList):
 
-#             yield self.env.timeout(path_time)
+        #skuName = str(SKU)
 
-#         slottimeList.append(path_time)
+        #random select rack, rack row, and depth
 
-#         #assign SKU
+        #rack = random.choice(dict.keys()) #select a random rack
 
-#         # if (SKU not in slotLocs.keys()):
+        #rack_row = random.randrange(rack.rows)
 
-#         #     slotLocs[SKU] = [slot]
+        #rack_col = random.randrange(rack.columns)
 
-#         # else:
+        djk_dist = find_dist_to_inb_fidel(sku) #dijkstra's path weight from inbound->random slot
 
-#         #     slotLocs[SKU].append(slot)
+        path_time = (djk_dist*UNIT_DIST)/FORKLIFT_SPEED 
 
-   
+        if self.env.now == 0:
 
-#     def pick(self,SKUList,picktimeList):
+            yield self.env.timeout(0)
 
-#         djk_dist = 0
+        else:
 
-#         #dijksta, starting outbound->slot->slot->outbound
+            yield self.env.timeout(path_time)
 
-#         djk_dist += random.randint(15,275) #dist outbound -> first SKU
+        slottimeList.append(path_time)
 
-#         for i in range(0,len(SKUList) - 1):
+        #assign SKU
 
-#             #dist = SKUList[i] + SKUList[i+1] # use dijkstra from slot to slot
+        # if (SKU not in slotLocs.keys()):
 
-#             dist = random.randint(1,100)
+        #     slotLocs[SKU] = [slot]
 
-#             djk_dist += dist
+        # else:
 
-#         djk_dist += random.randint(15,275) #dijkstra from last SKU -> outbound
+        #     slotLocs[SKU].append(slot)
 
-#         path_time = (djk_dist*UNIT_DIST)/FORKLIFT_SPEED
+    
 
-#         yield self.env.timeout(path_time)
+    def pick(self,SKUList,picktimeList):
 
-#         picktimeList.append(path_time)
+        djk_dist = 0
 
-#         #unassign SKU?
+        #dijksta, starting outbound->slot->slot->outbound
 
- 
+        djk_dist += find_pick_dist_ob(SKUList[0]) #dist outbound -> first SKU
 
-# ################################SLOTTING##########################################
+        for i in range(0,len(SKUList) - 1):
 
-# def inbound_pallet(env, skuName, wh,slotList): #create inbound pallets, requests a forklift
+            #dist = SKUList[i] + SKUList[i+1] # use dijkstra from slot to slot
 
-#     with wh.forklift.request() as request:
+            dist = find_dist_subsequent_picks_fitness(i)
 
-#         yield request
+            djk_dist += dist
 
-#         yield env.process(wh.slot(skuName,slotList))
+        djk_dist += find_pick_dist_ob(SKUList[-1]) #dijkstra from last SKU -> outbound
 
- 
+        path_time = (djk_dist*UNIT_DIST)/FORKLIFT_SPEED
 
-# def rand_inbound(env, skuName, wh, slotList):
+        yield self.env.timeout(path_time)
 
-#     with wh.forklift.request() as request:
+        picktimeList.append(path_time)
 
-#         yield request
+        #unassign SKU?
 
-#         yield env.process(wh.rand_slot(skuName,slotList))
+    
 
- 
+    def rand_pick(self,SKUList,picktimeList):
 
-# #################################ORDERS########################################
+        djk_dist = 0
 
-# def inbound_order(env, SKUlist,wh,pickList):
+        #dijksta, starting outbound->slot->slot->outbound
 
-#     with wh.forklift.request() as request:
+        djk_dist += find_pick_dist_ob(SKUList[0]) #dist outbound -> first SKU
 
-#         yield request
+        for i in range(0,len(SKUList) - 2):
 
-#         yield env.process(wh.pick(SKUlist,pickList))
+            #dist = SKUList[i] + SKUList[i+1] # use dijkstra from slot to slot
 
- 
+            dist = find_dist_subsequent_picks_fidel(SKUList[i]) #Put the random one here
 
-# def every_order(env,wh,pickList):
+            djk_dist += dist
 
-#     for order in orderList:
+        djk_dist += find_pick_dist_ob(SKUList[-1]) #dijkstra from last SKU -> outbound
 
-#         yield env.process(inbound_order(env,order,wh,pickList))
+        path_time = (djk_dist*UNIT_DIST)/FORKLIFT_SPEED
 
- 
+        yield self.env.timeout(path_time)
 
-# #################################SETUP#########################################
+        picktimeList.append(path_time)
 
-# def setup(env, num_forklifts, i_inter):
+        #unassign SKU?
 
-#     #Create the warehouse
 
-#     warehouse = Warehouse(env,num_forklifts)
 
- 
+################################SLOTTING##########################################
 
-#     #Create initial SKUs
+def inbound_pallet(env, skuName, wh,slotList): #create inbound pallets, requests a forklift
 
-#     for i in range(INITIAL_SKUS):
+    with wh.forklift.request() as request:
 
-#         sku = random.choice(uniqueSKU) # chooses any sku from the unique sku list 
+        yield request
 
-#         env.process(inbound_pallet(env,sku,warehouse,slotTimes))
+        yield env.process(wh.slot(skuName,slotList))
 
- 
 
-#     #Always process orders, create new SKUs in intervals
 
-#     while True:
+def rand_inbound(env, skuName, wh, slotList):
 
-#         env.process(every_order(env,warehouse,pickTimes))
+    with wh.forklift.request() as request:
 
-#         yield env.timeout(1)
+        yield request
 
-#         for i in range(PERIODIC_SKUS):
+        yield env.process(wh.rand_slot(skuName,slotList))
 
-#             sku = random.choice(uniqueSKU)
 
-#             env.process(inbound_pallet(env,sku,warehouse,slotTimes))
 
- 
+#################################ORDERS########################################
 
-# def rand_setup(env, num_forklifts, i_inter):
+def inbound_order(env, SKUlist,wh,pickList):
 
-#     #Create the warehouse
+    with wh.forklift.request() as request:
 
-#     warehouse = Warehouse(env,num_forklifts)
+        yield request
 
- 
+        yield env.process(wh.pick(SKUlist,pickList))
 
-#     #Create initial SKUs
 
-#     for i in range(INITIAL_SKUS):
 
-#         sku = random.choice(uniqueSKU)
+def every_order(env,wh,pickList):
 
-#         env.process(rand_inbound(env,sku,warehouse,rSlotTimes))
+    for order in orderList:
 
- 
+        yield env.process(inbound_order(env,order,wh,pickList))
 
-#     #Always process orders, create new SKUs in intervals
 
-#     while True:
 
-#         env.process(every_order(env,warehouse,rPickTimes))
+def rand_order(env, SKUlist,wh,pickList):
 
-#         yield env.timeout(i_inter)
+    with wh.forklift.request() as request:
 
-#         for i in range(PERIODIC_SKUS):
+        yield request
 
-#             sku = random.choice(uniqueSKU)
+        yield env.process(wh.rand_pick(SKUlist,pickList))
 
-#             env.process(rand_inbound(env,sku,warehouse,rSlotTimes))
 
- 
 
-# ####################ALGORITHM##EXECUTION####################################
+def rand_every(env,wh,pickList):
 
-# env = sp.Environment()
+    for order in orderList:
 
-# env.process(setup(env,NUM_FORKLIFTS,INBOUND_INTERVAL))
+        yield env.process(rand_order(env,order,wh,pickList))
 
-# env.run(until=SIM_TIME)
 
- 
 
-# #Slotting
+#################################SETUP#########################################
 
-# skus_processed = len(slotTimes)
+def setup(env, num_forklifts, i_inter,slotList,pickList):
 
-# avg_slot_time = statistics.mean(slotTimes)
+    #Create the warehouse
 
-# slotMedian = statistics.median(slotTimes)
+    warehouse = Warehouse(env,num_forklifts)
 
-# slotStdDev = statistics.stdev(slotTimes)
 
- 
 
-# #Picking
+    #Create initial SKUs
 
-# orders_processed = len(pickTimes)
+    for i in range(INITIAL_SKUS):
 
-# avg_pick_time = statistics.mean(pickTimes)
+        sku = random.choice(uniqueSKU)
 
-# pickMedian = statistics.median(pickTimes)
+        env.process(inbound_pallet(env,sku,warehouse,slotList))
 
-# pickStdDev = statistics.stdev(pickTimes)
 
- 
 
-# print("Num SKUs Processed: " + str(skus_processed))
+    #Always process orders, create new SKUs in intervals
 
-# print("Average Slot Time: " + str(avg_slot_time))
+    while True:
 
-# print("Slot Time Median: " + str(slotMedian))
+        env.process(every_order(env,warehouse,pickList))
 
-# print("Slot Time Std Dev: " + str(slotStdDev))
+        yield env.timeout(i_inter)
 
-# print("Num Orders Processed: " + str(orders_processed))
+        for i in range(PERIODIC_SKUS):
 
-# print("Average Pick Time: " + str(avg_pick_time))
+            sku = random.choice(uniqueSKU)
 
-# print("Pick Time Median: " + str(pickMedian))
+            env.process(inbound_pallet(env,sku,warehouse,slotList))
 
-# print("Pick Time Std Dev: " + str(pickStdDev))
 
- 
 
-# ####################FIDELITONE##EXECUTION###########################
+def rand_setup(env, num_forklifts, i_inter,slotList,pickList):
 
-# env2 = sp.Environment()
+    #Create the warehouse
 
-# env2.process(rand_setup(env2,NUM_FORKLIFTS,INBOUND_INTERVAL))
+    warehouse = Warehouse(env,num_forklifts)
 
-# env2.run(until=SIM_TIME)
 
- 
 
-# #Slotting
+    #Create initial SKUs
 
-# r_skus_processed = len(rSlotTimes)
+    for i in range(INITIAL_SKUS):
 
-# r_avg_slot_time = statistics.mean(rSlotTimes)
+        sku = random.choice(uniqueSKU)
 
-# r_slotMedian = statistics.median(rSlotTimes)
+        env.process(rand_inbound(env,sku,warehouse,slotList))
 
-# r_slotStdDev = statistics.stdev(rSlotTimes)
 
- 
 
-# #Picking
+    #Always process orders, create new SKUs in intervals
 
-# r_orders_processed = len(rPickTimes)
+    while True:
 
-# r_avg_pick_time = statistics.mean(rPickTimes)
+        env.process(rand_every(env,warehouse,pickList))
 
-# r_pickMedian = statistics.median(rPickTimes)
+        yield env.timeout(i_inter)
 
-# r_pickStdDev = statistics.stdev(rPickTimes)
+        for i in range(PERIODIC_SKUS):
 
- 
+            sku = random.choice(uniqueSKU)
 
-# print("Num SKUs Processed (Random): " + str(r_skus_processed))
+            env.process(rand_inbound(env,sku,warehouse,slotList))
 
-# print("Average Slot Time (Random): " + str(r_avg_slot_time))
 
-# print("Slot Time Median (Random): " + str(r_slotMedian))
 
-# print("Slot Time Std Dev (Random): " + str(r_slotStdDev))
+####################ALGORITHM##EXECUTION####################################
 
-# print("Num Orders Processed (Random): " + str(r_orders_processed))
+env = sp.Environment()
 
-# print("Average Pick Time (Random): " + str(r_avg_pick_time))
+env.process(setup(env,NUM_FORKLIFTS,INBOUND_INTERVAL,slotTimes,pickTimes))
 
-# print("Pick Time Median (Random): " + str(r_pickMedian))
+env.run(until=SIM_TIME)
 
-# print("Pick Time Std Dev (Random): " + str(r_pickStdDev))
+
+
+#Slotting
+
+skus_processed = len(slotTimes)
+
+avg_slot_time = statistics.mean(slotTimes)
+
+slotMedian = statistics.median(slotTimes)
+
+slotStdDev = statistics.stdev(slotTimes)
+
+
+
+#Picking
+
+orders_processed = len(pickTimes)
+
+avg_pick_time = statistics.mean(pickTimes)
+
+pickMedian = statistics.median(pickTimes)
+
+pickStdDev = statistics.stdev(pickTimes)
+
+
+
+print("Num SKUs Processed: " + str(skus_processed))
+
+print("Average Slot Time: " + str(avg_slot_time))
+
+print("Slot Time Median: " + str(slotMedian))
+
+print("Slot Time Std Dev: " + str(slotStdDev))
+
+print("Num Orders Processed: " + str(orders_processed))
+
+print("Average Pick Time: " + str(avg_pick_time))
+
+print("Pick Time Median: " + str(pickMedian))
+
+print("Pick Time Std Dev: " + str(pickStdDev))
+
+
+
+####################FIDELITONE##EXECUTION###########################
+
+env2 = sp.Environment()
+
+env2.process(rand_setup(env2,NUM_FORKLIFTS,INBOUND_INTERVAL,rSlotTimes,rPickTimes))
+
+env2.run(until=SIM_TIME)
+
+
+
+#Slotting
+
+r_skus_processed = len(rSlotTimes)
+
+r_avg_slot_time = statistics.mean(rSlotTimes)
+
+r_slotMedian = statistics.median(rSlotTimes)
+
+r_slotStdDev = statistics.stdev(rSlotTimes)
+
+
+
+#Picking
+
+r_orders_processed = len(rPickTimes)
+
+r_avg_pick_time = statistics.mean(rPickTimes)
+
+r_pickMedian = statistics.median(rPickTimes)
+
+r_pickStdDev = statistics.stdev(rPickTimes)
+
+
+print("-------------")
+print("Num SKUs Processed (Random): " + str(r_skus_processed))
+
+print("Average Slot Time (Random): " + str(r_avg_slot_time))
+
+print("Slot Time Median (Random): " + str(r_slotMedian))
+
+print("Slot Time Std Dev (Random): " + str(r_slotStdDev))
+
+print("Num Orders Processed (Random): " + str(r_orders_processed))
+
+print("Average Pick Time (Random): " + str(r_avg_pick_time))
+
+print("Pick Time Median (Random): " + str(r_pickMedian))
+
+print("Pick Time Std Dev (Random): " + str(r_pickStdDev))
