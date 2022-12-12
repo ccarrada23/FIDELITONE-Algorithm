@@ -8,7 +8,7 @@ from tkinter import Entry
 import copy
 import numpy as np
 from pyparsing import col
-from numba.experimental import jitclass
+# from numba.experimental import jitclass
 
 from location import RackLayout
 

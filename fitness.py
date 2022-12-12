@@ -1,7 +1,7 @@
 from distanceFunction import *
 from SKUClass import *
 from classes import *
-
+import random
 # @jit(nopython=True)
 def dist_to_closest_same_sku_loc(graph, rack_for_loc ,location, sku_to_putaway, predecessors, shortest_dist):
     
@@ -184,8 +184,9 @@ def association_function_helper(graph, start_rack, start_loc, path_start_goal):
             
                    
 # @jit(nopython=True)            
-def fittest_location(graph, sku_to_putaway, dijkstra_dict): 
-    
+def fittest_location(graph, sku_to_putaway, dijkstra_dict, check): 
+    if check == True:
+        return 27
     fitness_values = {} # locs -> fitness values
     graph = graph
     
@@ -253,55 +254,15 @@ def fittest_location(graph, sku_to_putaway, dijkstra_dict):
                         fitness_values[(curr_rack.UID, location)] = fitness_at_loc_for_sku
     max_value = max(fitness_values, key=fitness_values.get)
     print(max_value)
-    # print(fitness_values)
+
+
+
+
+    
+
+
+    
+
+
             
            
-# def fittest_location(graph, sku_to_putaway): 
-    
-#     fitness_values = {} # locs -> fitness values
-#     graph = graph
-    
-#     for rack in graph.racksDict:
-        
-#         curr_rack = graph.get_rack(rack)
-#         rack_mesh = curr_rack.rackLocations
-        
-#         for depth_idx in range(len(rack_mesh)):
-#             for row_idx in range(len(rack_mesh[0])):
-#                 for col_idx in range(len(rack_mesh[0][0])):
-                
-#                     if rack_mesh[depth_idx][row_idx][col_idx] == 0: # you only wanna calculate fitness at free(0) locations
-                        
-#                         location = (depth_idx, row_idx, col_idx)
-                        
-#                         # sku-fitness-at-a-location
-#                         # TODO:: change get_velocoty score to use new dijkstra helper
-#                         velocity_score_for_sku = get_velocity_score(graph, sku_to_putaway, rack)
-#                         weight_score_for_sku = get_weight_score(sku_to_putaway, row_idx, rack_mesh)
-#                         sku_fitness_at_loc = SKU_fitness(weight_score_for_sku, velocity_score_for_sku) # will be added to the total fitness of the location
-                        
-#                         # distance-to-closest-same-sku-location
-#                         distance_to_closest_same_sku_loc = dist_to_closest_same_sku_loc(graph, curr_rack, location, sku_to_putaway) # will be added to the total fitness of the location
-                        
-#                         # distance-to-most-associated-sku-location
-#                         distance_to_closest_mostassoc_sku_loc = distance_to_most_assoc_sku_locs(graph, curr_rack, location, sku_to_putaway)
-                        
-#                         # fitness, TODO: needs weights on each additive component
-#                         if distance_to_closest_same_sku_loc == 0:
-#                             fitness_at_loc_for_sku = sku_fitness_at_loc + (distance_to_closest_same_sku_loc) + (1/distance_to_closest_mostassoc_sku_loc)
-                            
-#                         elif distance_to_closest_mostassoc_sku_loc == 0:
-#                             fitness_at_loc_for_sku = sku_fitness_at_loc + (1/distance_to_closest_same_sku_loc) + (distance_to_closest_mostassoc_sku_loc)
-                            
-#                         elif distance_to_closest_same_sku_loc == 0 and distance_to_closest_mostassoc_sku_loc == 0:
-#                             fitness_at_loc_for_sku = sku_fitness_at_loc + (distance_to_closest_same_sku_loc) + (distance_to_closest_mostassoc_sku_loc)
-                        
-#                         else:
-#                             fitness_at_loc_for_sku = sku_fitness_at_loc + (1/distance_to_closest_same_sku_loc) + (1/distance_to_closest_mostassoc_sku_loc)
-                            
-#                         fitness_values[(curr_rack.UID, location)] = fitness_at_loc_for_sku
-#     max_value = max(fitness_values, key=fitness_values.get)
-#     print(max_value)
-                        
-                        
-              

@@ -5,7 +5,7 @@ from fitness import *
 import statistics
 import numpy as np
 from sku_generator import *
-
+from bad_slotting_algo import *
 from simulate import *
 
 import json_io
@@ -433,24 +433,14 @@ if __name__ == "__main__":
     # FULLY SATISFIED WITH THESE FITNESS VALUES 
     
     # start = time.time()
-    # fittest_location(graph, CSDVG70034_obj, dijkstra_map) #('C2_1', (0, 2, 0))
+    # fittest_location(graph, CSSS70051C_obj, dijkstra_map) #('C2_1', (0, 2, 0))
     # end = time.time()
     # print(end - start)
-    print(len(SKU_map))
-    
-    # fittest_location(graph, PK34024BAGr1_obj) # ('A_7', (0, 0, 0))
-    
-    # fittest_location(graph, CSSS70051C_obj) #('C2_1', (0, 2, 0))
-    
-    # fittest_location(graph, CSSP40091C_obj) # ('J2_0', (0, 1, 0))
-    
-    # FULLY SATISFIED WITH THESE FITNESS VALUES 
-    # distances = dijkstra_helper(graph, graph.get_rack('A_0'))[0]
-    
-    
-    
 
+    # fidelitone_slotting(graph, CSSS70051C_obj, dijkstra_map)
     
+    # start = time.time()
+
     
     
     
