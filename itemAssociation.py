@@ -1,0 +1,136 @@
+listofSKU = [] # 
+# TODO: you need to create a list of all SKUs and name it listofSKU
+# The list of SKUs should look like this: [SKU###, SKU###, SKU###, ....]. It should contain all SKUs the data we have ONLY ONCE.
+
+orders = [] 
+# TODO: you need to create a list of orders. The list of orders should look like this
+# orders = [order1, order2, order3, order4, ...., orderN]. 
+# These individual order sets in the list of orders has some SKUs from listofSKU. For example, order1 = [SKU###, SKU###, SKU###],
+# order2 = [SKU###, SKU###, SKU###, SKU###, SKU###]
+
+# ONCE YOU HAVE A LIST OF SKUS AND ORDERS (WHICH SHOULDNT TAKE THAT LONG) IN THIS CODE, YOU JUST NEED TO RUN THIS CODE
+  
+from collections import _OrderedDictKeysView
+from itertools import combinations
+from math import comb
+
+def pairAssoc(pair, orders): # check if pair belongs to an order, if it does, the association count of the two items of that pair increases
+    
+    pair_to_check = pair 
+    
+    first_item = pair_to_check[0]
+    second_item = pair_to_check[1]
+    assoc_count = 0
+    
+    for order in orders:
+        if first_item and second_item in order:
+            assoc_count = assoc_count + 1
+            
+    return assoc_count
+
+   
+# checkpair can only be called on A PAIR from a list like = [['A','B'], ['A','C']..] and AN ORDER from orders = [order1, order2, order3..]
+
+
+association_dict = {} # THIS LOOKS LIKE THIS 
+#   pair1 = ###
+#   pair2 = ###
+#   pair3 = ###
+#   .
+#   . 
+#   .
+#   pairN = ###
+
+comb = combinations(listofSKU, 2) # creates all possible combinations of size = 2 from listofSKU
+# comb looks like this: [[SKU###,SKU###], [SKU###,SKU###], [SKU###,SKU###], ....]
+
+for eachpair in comb:
+    assoc_value_of_pair = pairAssoc(eachpair, orders) # calls the function above 
+    association_dict[eachpair] = assoc_value_of_pair
+    
+print(association_dict) 
+# AGAIN, THIS LOOKS LIKE THIS
+#   pair1 = ###
+#   pair2 = ###
+#   pair3 = ###
+#   .
+#   . 
+#   .
+#   pairN = ###
+
+#  """
+#     orders  SKU
+#     111     SKU001
+#     222     SKU002
+#     333     SKU001
+#     333     SKU004
+#     444     SKU002
+#     444     SKU007
+#     444     SKU004
+
+#     orders  SKU
+#     111     SKU001
+#     111     SKU002
+#     222     SKU001
+#     333     SKU004
+#     444     SKU002
+#     444     SKU007
+#     444     SKU004
+    
+#     want
+#     [[SKU001, SKU002], [SKU001, SKU004, SKU002], .....]
+    
+    
+# """
+    
+SKUarr = []  
+orders = []
+# what do you need?
+# you want to make a list of lists 
+# called Orders = [order1, order2, order3, order4, ....]
+orders = ['111', '111', '222', '222', '222', '333', '444']
+SKUList = ['1','2', '1', '4', '2', '7', '4']
+req_list = []
+
+for list_idx in range(len(orders)):
+    
+        
+    skusbyOrder = list()
+        
+    if list_idx == len(orders) - 1:
+            break
+        
+    curr_sku_item = SKUList[list_idx]
+    next_sku_item = SKUList[list_idx + 1]
+        
+    curr_order_item = orders[list_idx] # now i have the current iter-> orderItem
+    next_order_item = orders[list_idx + 1]
+        
+    if curr_order_item == next_order_item:
+        skusbyOrder.append(SKUList[curr_sku_item], SKUList[next_sku_item])
+        
+    # else:
+        
+            
+        
+        
+unique_order = []
+order_sku_dict = {}
+order = None
+# for order in orders
+    # if the same order thing keeps coming, we only take it once
+    # for all the orders of the same string, add the SKUs to the list of that order
+    # if a unique order does not match the last entry of the 
+#     for sku in SKU_list:
+#         order_saved = order
+#         unique_order[order_saved]
+    
+# for order, sku in zip(orders, SKU_list):
+#     unique_order.append(order) # unique order = [order1]
+#     order_saved = order # order_saved = order1
+
+a = [1,2,3]
+b = [4,5,4]
+for idx1 in range(len(a)):
+    for idx2 in range(len(b)):
+        print(idx1, idx2)
