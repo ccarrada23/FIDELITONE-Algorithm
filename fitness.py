@@ -3,39 +3,35 @@ from SKUClass import *
 from classes import *
 import random
 # @jit(nopython=True)
+
+def exception_same_ass(start_location, goal_location):
+    (d1, r1, c1) = start_location
+    (d2, r2, c2) =  goal_location
+    distance_within_rack = (abs(d1-d2) + abs(r1-r2) + abs(c1-c2))
+    return distance_within_rack
+
 def dist_to_closest_same_sku_loc(graph, rack_for_loc ,location, sku_to_putaway, predecessors, shortest_dist):
-    
     
     start_rack = rack_for_loc
     start_loc = location
     locs_of_input_sku = sku_to_putaway.findSKU(graph)
     distances = []
     
-    path_start_goal = None
-    # for every value in locs_for_input_sku, we will need to run the dijktra with racks
-    # in locs_for_input_sku as goal_node and rack_being_checked as start node
-    # after that, we need to get orientations for start and goal
-    # after getting orientations, will need to calculate cost-to-exit and cost-to-enter for
-    # start_node and goal_node respectively
-    # we will do these 3 things for every dist we find and add it to the distance array
+    # path_start_goal = None
+    
     for goal_rack_loc in locs_of_input_sku:
-        
-        # if start_rack == goal_rack_loc[0]:
-        #     return 0, path_start_goal
         
         distance = 0
         
-        path_to_start = dijkstra_trace_path(graph, start_rack.UID, goal_rack_loc[0].UID, predecessors)
-        path_start_goal = path_to_start
+        path_start_goal = dijkstra_trace_path(graph, start_rack.UID, goal_rack_loc[0].UID, predecessors)
+        # since start orientations will change depending on whehther we do l2r or r2l
+        # for l2r 
         
         distance += shortest_dist[goal_rack_loc[0].UID]
         
         if start_rack == goal_rack_loc[0]:
-            return 0, path_start_goal
+            return (goal_rack_loc[1]), None # TODO change this and make it subtract the d-d, r-r, c-c
         
-        # path_start_goal = dijkstra(graph, start_rack, goal_rack_loc[0])[0]
-        
-        # distance += int(dijkstra(graph, start_rack, goal_rack_loc[0])[1]) # update dist
           
         (start_orien, goal_orien) = get_first_last_orientations(graph, path_start_goal)
         # cost_to_exit_start = cost_to_exit_enter_rack(start_rack, start_loc, start_orien)
@@ -55,7 +51,7 @@ def dist_to_closest_same_sku_loc(graph, rack_for_loc ,location, sku_to_putaway, 
     if len(distances) == 0:
         return 0, [] 
      
-    return min(distances), path_start_goal # returns the distance to the closest same 
+    return min(distances), start_orien # returns the distance to the closest same 
 
 # @jit(nopython=True)
 def dist_closest_same_helper(graph, path_start_goal, start_rack, start_loc):
@@ -93,10 +89,9 @@ def distance_to_most_assoc_sku_locs(graph, rack_for_loc ,location, sku_to_putawa
     start_rack = rack_for_loc
     start_loc = location
     
-    locs_of_assoc_sku = sku_to_putaway.findAssocSKUlocs(graph) # this will give you several locations assoc sku
-    # this looks like this [(rack1, (d,r,c), '12'), (rack4, (d,r,c), '12'), (rack11, (d,r,c), '34')]
+    locs_of_assoc_sku = sku_to_putaway.findAssocSKUlocs(graph) 
     
-    path_start_goal = None
+    # path_start_goal = None
     
     for goal_rack_loc in locs_of_assoc_sku:
         
@@ -106,26 +101,22 @@ def distance_to_most_assoc_sku_locs(graph, rack_for_loc ,location, sku_to_putawa
         distance = 0
         
         path_start_goal = dijkstra_trace_path(graph, start_rack.UID, goal_rack_loc[0].UID, predecessors)
-        # path_start_goal = path_to_start[0]
+        # makes different paths for each associated sku
+        # need start orien for each path, not the path
+        
         path_goal_distance = shortest_dist[goal_rack_loc[0].UID]
         
         distance += int(path_goal_distance)
         
-        # path_start_goal = dijkstra(graph, start_rack, goal_rack_loc[0])[0]
-        
-        # distance += int(dijkstra(graph, start_rack, goal_rack_loc[0])[1]) # just edge distance
-        
-        # print(distance)
-        
         if goal_rack_loc[0].UID == start_rack.UID:
-            return 0, path_start_goal
+            return  goal_rack_loc[1], None # this would include another function that does the index subtractions because then you're just
+        # in the same rack and all you need is the location - location dist
         
         (start_orien, goal_orien) = get_first_last_orientations(graph, path_start_goal)
         # cost_to_exit_start = cost_to_exit_enter_rack(start_rack, start_loc, start_orien)
         
         cost_to_enter_goal = cost_to_exit_enter_rack(goal_rack_loc[0], goal_rack_loc[1], goal_orien)
         
-        # print(start_orien, goal_orien)
         
         cost_to_pass = 0
         
@@ -139,15 +130,15 @@ def distance_to_most_assoc_sku_locs(graph, rack_for_loc ,location, sku_to_putawa
         # print(cost_to_enter_goal, cost_to_exit_start, cost_to_pass)
         
         # print(cost_to_enter_goal, cost_to_pass, cost_to_exit_start)
-        distances.append((goal_rack_loc[2], distance))
-        # [('12', 34), ('3', 11), ('32', 9)]
-        # print(distances)
+        distances.append((goal_rack_loc[2], distance, start_orien))
+        # [('12', 34, R2L), ('12', 11, L2R), ('32', 9, L2R)]
+        
     distances_for_each_assoc_sku = []
-    temp = set()
+    temp = set() 
     
     for tuple in distances:
         if tuple[0] not in temp:
-            temp.add(tuple[0])
+            temp.add(tuple[0]) # has '12', '12', '32'
             
     for sku in temp:
         list_of_dist_for_sku = []
@@ -160,20 +151,41 @@ def distance_to_most_assoc_sku_locs(graph, rack_for_loc ,location, sku_to_putawa
     
     distance_sum = 0
     
+    
+    
+    dist_to_find = []
     for dist_tuple in distances_for_each_assoc_sku:
-        distance_sum += min(dist_tuple)
+        distance_sum = min(dist_tuple)
+        dist_to_find.append(distance_sum)
+        
+    preferred_paths_start_orien = []  
+    for tuple in distances:
+        for dist in dist_to_find:
+            if dist in tuple:
+                preferred_paths_start_orien.append(tuple[2])
+    
+    dist_to_return = sum(dist_to_find)
     
     if distance_sum == 0:
-        return 0, path_start_goal
+        return 0, preferred_paths_start_orien #todo write function for comparing within same rack
     
-    return distance_sum, path_start_goal
+    return dist_to_return, preferred_paths_start_orien
             
-            
+# if i just returned the start orientations for every path, and in my triple loop inside 
+# the fitness function, i add    
 # @jit(nopython=True)   
 def association_function_helper(graph, start_rack, start_loc, path_start_goal):
+    # since the function is called for the same start location, 
+    # this function needs to consider different start orientations for
+    # different paths that can be made from start rack and goal racks
+    # for every path made, this function will return the cost to exit start
+    # based on which side is used to exit start node
+    # if start orien is l2r, then this function will add cost to exit differently than for r2l
     
     if len(path_start_goal) == 1:
-        return 0
+        return 0 # if the size of the path from start to goal is 1, meaning start = goal, there is no cost of 
+    # exiting the start rack because youre just there, but there is a goal location and start location 
+    # if sl = (0,0,0) and gl = (0,2,1), then we need to add (0-0)+(0-2)+(0-1.75) as the cost within the rack
     else:
         
         (start_orien, goal_orien) = get_first_last_orientations(graph, path_start_goal)
@@ -183,36 +195,24 @@ def association_function_helper(graph, start_rack, start_loc, path_start_goal):
             
             
                    
-# @jit(nopython=True)            
-def fittest_location(graph, sku_to_putaway, dijkstra_dict, check): 
-    if check == True:
-        return 27
-    fitness_values = {} # locs -> fitness values
+# @jit(nopython=True)     
+       
+def fittest_location(graph, sku_to_putaway, dijkstra_dict): 
+    
+    fitness_values = {} 
     graph = graph
     
     for rack in graph.racksDict:
-        
         if rack == "E2_0" or rack == "E2_4" or rack == "E3_2" or rack == "M1_4":
             continue
-        # print("Checking fitness at Rack: " + rack)
         curr_rack = graph.get_rack(rack)
         rack_mesh = curr_rack.rackLocations
         
         shortest_dist, predecessors = dijkstra_dict[rack]
-        # dijkstra_helper(graph, curr_rack)
-        # velocity_score_for_sku = get_velocity_score(graph, sku_to_putaway, rack, shortest_dist['Outbound'])
-        
-        
-        # distance-to-closest-same-sku-location
-        distance_to_closest_same_sku_loc, path_start_goal_1 = dist_to_closest_same_sku_loc(graph, curr_rack, (0, 0, 0), sku_to_putaway, predecessors, shortest_dist) # will be added to the total fitness of the location
-        
-        
-        test = distance_to_most_assoc_sku_locs(graph, curr_rack, (0, 0, 0), sku_to_putaway, shortest_dist, predecessors)
-        distance_to_closest_mostassoc_sku_loc, path_start_goal_2 = test
-        
+        distance_to_closest_same_sku_loc_OR_goal_loc, start_orien_same = dist_to_closest_same_sku_loc(graph, curr_rack, (0, 0, 0), sku_to_putaway, predecessors, shortest_dist) 
+        distance_to_closest_mostassoc_sku_loc_OR_goal_loc, start_oriens_ass = distance_to_most_assoc_sku_locs(graph, curr_rack, (0, 0, 0), sku_to_putaway, shortest_dist, predecessors)        
         
         for depth_idx in range(len(rack_mesh)):
-            
             for row_idx in range(len(rack_mesh[0])):
                 
                 weight_score_for_sku = get_weight_score(sku_to_putaway, row_idx, rack_mesh)
@@ -221,36 +221,54 @@ def fittest_location(graph, sku_to_putaway, dijkstra_dict, check):
                 
                 for col_idx in range(len(rack_mesh[0][0])):
                 
-                    if rack_mesh[depth_idx][row_idx][col_idx] == 0: # you only wanna calculate fitness at free(0) locations
-                        
+                    if rack_mesh[depth_idx][row_idx][col_idx] == 0: # free location in the mesh
+                       
                         location = (depth_idx, row_idx, col_idx)
                         
-                        cost_to_exit_start_2 = association_function_helper(graph, curr_rack, location, path_start_goal_2)
-                        cost_to_exit_start_1 = dist_closest_same_helper(graph, path_start_goal_1, curr_rack, location)
+                        distance_same = 0
+                        #HANDLING EXCEPTIONS FOR DIST TO SAME FUNC
+                        if isinstance(distance_to_closest_same_sku_loc_OR_goal_loc, (int, float)):
+                            distance_same = distance_to_closest_same_sku_loc_OR_goal_loc + cost_to_exit_enter_rack(curr_rack, location, start_orien_same)
+                            
+                        else:
+                            distance_within_rack = exception_same_ass(location, distance_to_closest_same_sku_loc_OR_goal_loc)
+                            distance_same = distance_within_rack
                         
-                        # sku-fitness-at-a-location
-                        # weight_score_for_sku = get_weight_score(sku_to_putaway, row_idx, rack_mesh)
+                        distance_ass = 0
+                        cost_to_exit = 0
+                        #HANDLING EXCEPTIONS FOR DIST TO ASS FUNC
+                        if isinstance(distance_to_closest_mostassoc_sku_loc_OR_goal_loc, (int, float)):
+                            for type in start_oriens_ass:
+                                cost_to_exit += cost_to_exit_enter_rack(curr_rack, location, type)
+                            distance_ass = distance_to_closest_mostassoc_sku_loc_OR_goal_loc + cost_to_exit
+                        else:
+                            distance_within_rack = exception_same_ass(location, distance_to_closest_mostassoc_sku_loc_OR_goal_loc)
+                            distance_ass = distance_within_rack
+                            
+                            
+                        # cost_to_exit_start_assoc = 0
+                        
+                        # i am getting different locations but the same path again
+                        # and again. this needs to give me a different path everytime because that is what
+                        # determines l2r or r2l logic 
+                        
+                        # cost_to_exit_start_same = dist_closest_same_helper(graph, path_start_goal_1, curr_rack, location)
+                        # cost_to_exit_start_same = cost_to_exit_enter_rack(curr_rack, location, start_orien_same)
                         
                         velocity_score_for_sku = get_velocity_score(sku_to_putaway, curr_rack)
                         
-                        fitness_at_loc_for_sku = weight_score_for_sku + velocity_score_for_sku + cost_to_exit_start_2 + cost_to_exit_start_1
+                        sku_fitness_at_loc = velocity_score_for_sku + weight_score_for_sku
                         
-                        # TODO: update distance_to_closest_same_sku_loc & distance_to_closest_mostassoc_sku_loc to account for location inside rack
-                        
-                        # distance-to-most-associated-sku-location
-                        sku_fitness_at_loc = 0
-                        # fitness, TODO: needs weights on each additive component
-                        
-                        fitness_at_loc_for_sku = sku_fitness_at_loc +  (1/(distance_to_closest_mostassoc_sku_loc + 1)) +  (1/(distance_to_closest_same_sku_loc+1))
-                        # if distance_to_closest_same_sku_loc == 0 and distance_to_closest_mostassoc_sku_loc == 0:
-                        #     fitness_at_loc_for_sku = sku_fitness_at_loc + (1) + (1)
-                        # elif distance_to_closest_same_sku_loc == 0:
-                        #     fitness_at_loc_for_sku = sku_fitness_at_loc + (1) + (1/distance_to_closest_mostassoc_sku_loc)
-                        # elif distance_to_closest_mostassoc_sku_loc == 0:
-                        #     fitness_at_loc_for_sku = sku_fitness_at_loc + (1/distance_to_closest_same_sku_loc) + (1)
-                        # else:
-                        #     fitness_at_loc_for_sku = sku_fitness_at_loc + (1/distance_to_closest_same_sku_loc) + (1/distance_to_closest_mostassoc_sku_loc)
+                        if distance_ass == 0: # items that have no associated items inside
+                            distance_ass = -1
+                        if distance_same == 0: # when same item does not exist in the facility
+                            distance_same = -1
                             
+                       # 
+                        fitness_at_loc_for_sku = (1/(distance_ass) + 1) 
+                        +  (1/(distance_same) + 1) 
+                        + sku_fitness_at_loc 
+                        
                         fitness_values[(curr_rack.UID, location)] = fitness_at_loc_for_sku
     max_value = max(fitness_values, key=fitness_values.get)
     print(max_value)

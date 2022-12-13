@@ -9,7 +9,7 @@ from bad_slotting_algo import *
 from simulate import *
 
 import json_io
-
+import timeit
 import time
 
 def create_json_file(graph):
@@ -339,7 +339,7 @@ if __name__ == "__main__":
     graph.get_rack('Q1_2').assignSKU(0,1,1,get_key('DAS39211'))
     graph.get_rack('Q2_4').assignSKU(0,0,2,get_key('EA00555'))    
     graph.get_rack('P2_4').assignSKU(0,1,2,get_key('DVG39226'))
-    graph.get_rack('I1_0').assignSKU(0,0,0,get_key('DHW39214'))
+    graph.get_rack('I1_0').assignSKU(0,0,0,get_key('DHW39214')) #hjbghjvhvj
     graph.get_rack('W_3').assignSKU(0,1,2,get_key('CSSS70051C'))
     graph.get_rack('C1_3').assignSKU(0,1,0,get_key('DVG39226'))
     graph.get_rack('P2_0').assignSKU(0,1,2,get_key('EA91303'))
@@ -411,9 +411,14 @@ if __name__ == "__main__":
     CSSP40091C_obj = SKU_map[get_key('CSSP40091C')]
     CFC35202_obj = SKU_map[get_key('CFC35202')]
     
+    DVG39226_obj = (SKU_map[get_key('DVG39226')])
+    # distance_to_most_assoc_sku_locs(graph, graph.get_rack('M1_3'), (0,2,1), DVG39226_obj, dijkstra_map)
+    
     # create_json_file(graph)
     dijkstra_map = json_io.load_from_json("dikjstra.json")
-    
+    # print(distance_to_most_assoc_sku_locs(graph, graph.get_rack('M1_3'), (0,2,1), DVG39226_obj, dijkstra_map['M1_3'][0], dijkstra_map['M1_3'][1]))
+    # print(DVG39226_obj.associationList)
+    # fittest_location(graph, DVG39226_obj, dijkstra_map)
     # print(type(list(dijkstra_map.keys())[0]))
     # key = list(dijkstra_map.keys())[0]
     # print(type(dijkstra_map[key]))
@@ -436,7 +441,6 @@ if __name__ == "__main__":
     # fittest_location(graph, CSSS70051C_obj, dijkstra_map) #('C2_1', (0, 2, 0))
     # end = time.time()
     # print(end - start)
-<<<<<<< HEAD
     # print(len(SKU_map))
     
     # fittest_location(graph, PK34024BAGr1_obj) # ('A_7', (0, 0, 0))
@@ -444,14 +448,28 @@ if __name__ == "__main__":
     # fittest_location(graph, CSSS70051C_obj) #('C2_1', (0, 2, 0))
     
     # fittest_location(graph, CSSP40091C_obj) # ('J2_0', (0, 1, 0))
+    # print(PK34024BAGr1_obj.weight, PK34024BAGr1_obj.velocity, PK34024BAGr1_obj.associationList)
+    # graph.get_rack('A_7').assignSKU(0,1,0,get_key('DVG39226')) is one of the assoc items
     
     # FULLY SATISFIED WITH THESE FITNESS VALUES 
     # distances = dijkstra_helper(graph, graph.get_rack('A_0'))[0] 
+    # print(SKU_map[134].associationList)
+    # print(SKU_map[134].velocity)
+    # print(SKU_map[134].weight)
+    objtocheck = SKU_map[87]
+    # print(objtocheck.weight, objtocheck.velocity, objtocheck.associationList)
+    start = timeit.timeit()
+    fittest_location(graph, SKU_map[87], dijkstra_map)
+    end = timeit.timeit()
+    print(end-start)
+    # print(str(SKU_map[120].weight))
+    # print(str(graph.get_rack('W_6').distToOB))
+   
     
-    
-    
-=======
->>>>>>> 18895abe1de29e8d8fda402b2392eb309f5367b3
+    # add 0.21626637359240555 to all velocities 
+        
+    # print(get_weight_score(SKU_map[34], 1, graph.get_rack('A_0').rackLocations))
+          
 
     # fidelitone_slotting(graph, CSSS70051C_obj, dijkstra_map)
     

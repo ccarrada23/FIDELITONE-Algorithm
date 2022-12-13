@@ -5,27 +5,45 @@ import pandas as pd
 import json
 import statistics
 from classes import *
+from sku_generator import *
 
+# def scale_weights(sku):
+    # you will call it on sku
+    # get the .weight of the sku
+    # you will get the min of those weights first 
 
-
+# def get_SKU_map():
+#     df = pd.read_excel("./velocity_weight.xlsx")
+#     association_lists = json_to_dict("./preprocess/top_association_map.json")
+#     SKU_map = {0: None}
+#     i = 1
+#     for index, row in df.iterrows():
+#         association_list = []
+#         if row["SKU ID"] in association_lists:
+#             association_list = association_lists[row["SKU ID"]]
+#         SKU_map[index] = SKU(row["SKU ID"], (int(row["Weight Z Score"] + 0.5040787588602963), row["Velocity Z Score"], association_list, index)
+#         i+=1
+#     return SKU_map
 
 def json_to_dict(file_path):
     with open(file_path) as json_file:
         data = json.load(json_file)
         return data
-    
-def get_SKU_map():
-    df = pd.read_excel("./velocity_weight.xlsx")
-    association_lists = json_to_dict("./preprocess/top_association_map.json")
-    SKU_map = {0: None}
-    i = 1
-    for index, row in df.iterrows():
-        association_list = []
-        if row["SKU ID"] in association_lists:
-            association_list = association_lists[row["SKU ID"]]
-        SKU_map[i] = SKU(row["SKU ID"], row["Weight Z Score"], row["Velocity Z Score"], association_list, i)
-        i+=1
-    return SKU_map
+# def get_SKU_map():
+#     df = pd.read_excel("./updated_vel_weight.xlsx")
+#     association_lists = json_to_dict("./preprocess/top_association_map.json")
+#     SKU_map = {0: None}
+#     i = 1
+#     for index, row in df.iterrows():
+#         association_list = []
+#         if row["SKU ID"] in association_lists:
+#             association_list = association_lists[row["SKU ID"]]
+#         SKU_map[i] = SKU(row["SKU ID"], row["Z_Weight_scaled"], row["Z_Vel_scaled"], association_list, i)
+#         i+=1
+#     return SKU_map
+
+# SKU_map = get_SKU_map()
+
 
 class SKU:
     def __init__(self, UID, weight, velocity, association_list, key):
@@ -52,10 +70,7 @@ class SKU:
                             
         return values_for_dict     
     
-    
-    ########
-    # helper for 2nd distance function in fitness function
-    ########  
+  
     def findAssocSKUlocs(self, graph): # find the locations of the associated skus in the graph. helper for 
         assocLocations = []
         # SKU_to_find_UID = self.UID
@@ -80,24 +95,31 @@ class SKU:
                                 locations = (rack, (depth_idx, row_idx, col_idx), str(sku))
                                 assocLocations.append(locations)
         return assocLocations
-   
+def get_SKU_map():
+    df = pd.read_excel("./updated_vel_weight.xlsx")
+    association_lists = json_to_dict("./preprocess/top_association_map.json")
+    SKU_map = {0: None}
+    i = 1
+    for index, row in df.iterrows():
+        association_list = []
+        if row["SKU ID"] in association_lists:
+            association_list = association_lists[row["SKU ID"]]
+        SKU_map[i] = SKU(row["SKU ID"], row["Z_Weight_scaled"], row["Z_Vel_scaled"], association_list, i)
+        i+=1
+    return SKU_map
 
-##########
 SKU_map = get_SKU_map()
-##########
-def get_key(val):
-    for key, value in SKU_map.items():
-        if value and val == value.UID:
-            return key
-    return "key doesn't exist"  
-
-
-                     
-                        
 # def json_to_dict(file_path):
 #     with open(file_path) as json_file:
 #         data = json.load(json_file)
 #         return data
+
+# def get_key(val):
+#     for key, value in SKU_map.items():
+#         if value and val == value.UID:
+#             return key
+#     return "key doesn't exist"  
+
     
 # def get_SKU_map():
 #     df = pd.read_excel("./velocity_weight.xlsx")
@@ -108,19 +130,25 @@ def get_key(val):
 #         association_list = []
 #         if row["SKU ID"] in association_lists:
 #             association_list = association_lists[row["SKU ID"]]
-#         SKU_map[i] = SKU(row["SKU ID"], row["Weight Z Score"], row["Velocity Z Score"], association_list, i)
+            
+#         # weight_sku = int(row["Weight Z Score"]) + 0.5040787588602963
+        
+        
+#         SKU_map[index] = SKU(row["SKU ID"], (row["Weight Z Score"]) + 0.5040787588602963, row["Velocity Z Score"], association_list, index)
 #         i+=1
 #     return SKU_map
-# ##########
+##########
 # SKU_map = get_SKU_map()
-# ##########
-# def get_key(val):
-#     for key, value in SKU_map.items():
-#         if value and val == value.UID:
-#             return key
-#     return "key doesn't exist"  
+##########
+def get_key(val):
+    for key, value in SKU_map.items():
+        if value and val == value.UID:
+            return key
+    return "key doesn't exist"  
+
 
 item_assoc_w_one = SKU_map[54].associationList
+
 # for assoc_item_uid in item_assoc_w_one:
 #     print(get_key(assoc_item_uid))      
 # use excel file for unique names and assocList
@@ -136,7 +164,6 @@ item_assoc_w_one = SKU_map[54].associationList
 # SKU010 = SKU("010", 76, 47, [], "")
 # SKU011 = SKU("011", 76, 47, [], "")
 # SKU012 = SKU("012", 76, 47, [], "")
-
 # SKUMap = {
 #     0 : None,
 #     1 : SKU001,
@@ -232,7 +259,6 @@ def dist_from_outbound_zscore(graph, curr_rack, predecessors):
 def get_velocity_score(sku, rack):
     
     z_vel = sku.velocity
-    # z_rack = dist_from_outbound_zscore(graph, rack, predecessors)
     z_rack = rack.distToOB # rackScore stores the +ve values for distances to outbound
     
     if z_vel > VELOCITY_PERCENTILE_75:
@@ -323,7 +349,7 @@ def get_weight_score(sku, row_idx, rack_mesh):
             weight_score = ((len(rack_mesh[0]) - 1) - row_idx) * weight
     
     if weight <= WEIGHT_PERCENTILE_75 and weight >= WEIGHT_PERCENTILE_25:
-        if row_idx == 0 or row_idx == len(rack_mesh[0]) - 1:
+        if row_idx == 0 or row_idx == (len(rack_mesh[0]) - 1):
             weight_score = 0
         elif row_idx == 1 or row_idx == len(rack_mesh[0]) - 2:
             weight_score = 1 * weight
