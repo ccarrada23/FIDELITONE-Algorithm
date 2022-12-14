@@ -1,0 +1,94 @@
+# representing locations as a 3*3 matrix with empty. each position [i][j] in the matrix for ith row 
+# and jth column is a location where we will calculate fitness. so the location is essentially just a matrix 
+# which is 4*3, which means the bottom row is A, top row is D and each row has a capacity equal to the number
+# of columns in the row. fitness at each location depends on distance and height. At each rack, levels 
+# A, B, C and D all have different heights but the same capacity 
+# This is how a rack with capacity/level = 3 looks like
+# D : [] [] []
+# C : [] [] []
+# B : [] [] []
+# A : [] [] []
+# note there are racks that can have more levels than A, B, C, D and a capacity > 3
+
+import numpy as np
+
+# from SKUClass import SKU
+
+class SKU:
+    def __init__(self, UID, weight, velocity, associationList):
+        self.UID = UID
+        self.weight = weight # in units
+        self.velocity = velocity # frequency of pick in a given period 
+        # volume maybe? per tray/unit in the pallet 
+        self.associationList = associationList # list of items it is associated with along with association values
+        
+
+
+class RackLayout: # looks like [ [][][], [][][], [][][], [][][] ]
+    def __init__(self, 
+                 depth,
+                 rows,
+                 columns): 
+        self.depth = depth
+        self.rows = rows
+        self.columns = columns
+
+        
+    def createMesh(self):
+        rows = self.rows
+        columns = self.columns
+        depth = self.depth
+        locationMesh = np.zeros((depth, rows, columns), int)
+        return locationMesh
+        
+        
+        
+# def SKULocationInMatrix(self, row, column, SKUmap): 
+# wanna do this: matrix_a.SKULocationInMatrix(rowInd, columnInd, SKU###)
+# matrix = RackLayout(rows, columns).createMatrix 
+# rowInd = row where we want to put SKU
+# columnInd = column where we want to put SKU
+# SKU### = int_to_SKU
+# matrix_SKU[rowInd][colInd] = int key from         
+        
+        
+# level_a = RackLayout(4,3)
+# level_a.createMatrix() # this will create a 4*3 matrix
+# item velocity, dump of past orders, current state of the facility, 
+# aisle wise data for the racks
+
+# class Rack:
+#     def __init__(self, 
+#                  UID,
+#                  rackLocations,
+#                  neighbors = []):
+#         self.UID = UID
+#         self.rackLocations = rackLocations # empty or full 
+#         self.neighbors = neighbors
+        
+#     def assignSKU(self, 
+#                   rowInd, 
+#                   colInd, 
+#                   SKUkey):
+#         matrix = self.rackLocations
+#         matrix[rowInd][colInd] = SKUkey
+        
+#     def addNeighbor(self):
+#         pass
+
+SKU001 = SKU("001", 40, 60, [])
+SKU002 = SKU("002", 32, 87, [])
+SKU003 = SKU("003", 22, 12, [])
+SKU004 = SKU("004", 76, 47, [])
+SKU005 = SKU("005", 76, 47, [])
+SKU006 = SKU("006", 76, 47, [])
+
+int_to_SKUMap = {
+    0 : None,
+    1 : SKU001,
+    2 : SKU002,
+    3 : SKU003,
+    4 : SKU004,
+    5 : SKU005,
+    6 : SKU006
+}
