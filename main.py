@@ -311,19 +311,19 @@ if __name__ == "__main__":
     graph.get_rack('W_1').assignSKU(0,1,2,get_key('CSSP50001C')) # key 32 assoc
     graph.get_rack('B_3').assignSKU(0,0,1,get_key('DVG39226'))
     graph.get_rack('H2_0').assignSKU(0,0,2,get_key('DVG39226'))
-    graph.get_rack('W_2').assignSKU(0,1,2,get_key('CSSS70051C'))
+    graph.get_rack('D1_4').assignSKU(0,1,2,get_key('CSSS70051C')) ##
     graph.get_rack('H2_5').assignSKU(0,3,2,get_key('DVG39226'))
-    graph.get_rack('G1_3').assignSKU(0,1,2,get_key('CSSS70051C'))
+    graph.get_rack('G1_3').assignSKU(0,1,2,get_key('CSSS70051C')) ##
     graph.get_rack('W_7').assignSKU(0,0,0,get_key('PK34022BAGr1'))
     graph.get_rack('W_7').assignSKU(0,0,2,get_key('DVG39226'))
     graph.get_rack('X_0').assignSKU(0,2,2,get_key('PK34022BAGr1'))
     graph.get_rack('X_3').assignSKU(0,1,2,get_key('DVG39226'))
-    graph.get_rack('C2_3').assignSKU(0,1,2,get_key('CSSS30055C12'))
+    graph.get_rack('C1_6').assignSKU(0,1,2,get_key('CSSS30055C12'))
     graph.get_rack('X_7').assignSKU(0,0,2,get_key('DVG39226'))
-    graph.get_rack('G2_3').assignSKU(0,1,2,get_key('CSSS70051C'))
+    graph.get_rack('G2_3').assignSKU(0,1,2,get_key('CSSS40082C')) ##
     graph.get_rack('M2_3').assignSKU(0,1,1,get_key('DVG39226'))
     graph.get_rack('M2_5').assignSKU(0,1,0,get_key('DVG39226'))
-    graph.get_rack('N1_5').assignSKU(0,1,0,get_key('CSSS70051C'))
+    graph.get_rack('N1_5').assignSKU(0,1,0,get_key('CSSS70051C')) ##
     graph.get_rack('N1_0').assignSKU(0,1,0,get_key('DVG39226'))
     graph.get_rack('L1_0').assignSKU(0,1,2,get_key('DVG39226'))
     graph.get_rack('L2_0').assignSKU(0,0,1,get_key('EA00555'))
@@ -340,20 +340,20 @@ if __name__ == "__main__":
     graph.get_rack('Q2_4').assignSKU(0,0,2,get_key('EA00555'))    
     graph.get_rack('P2_4').assignSKU(0,1,2,get_key('DVG39226'))
     graph.get_rack('I1_0').assignSKU(0,0,0,get_key('DHW39214')) #hjbghjvhvj
-    graph.get_rack('W_3').assignSKU(0,1,2,get_key('CSSS70051C'))
+    graph.get_rack('W_3').assignSKU(0,1,2,get_key('CSSS70051C')) ##
     graph.get_rack('C1_3').assignSKU(0,1,0,get_key('DVG39226'))
     graph.get_rack('P2_0').assignSKU(0,1,2,get_key('EA91303'))
     graph.get_rack('L1_6').assignSKU(0,0,2,get_key('DVG39226'))
     graph.get_rack('F3_1').assignSKU(0,1,2,get_key('CSDVG70034'))
     graph.get_rack('W_7').assignSKU(0,1,2,get_key('DVG39226'))
     graph.get_rack('J3_0').assignSKU(0,1,2,get_key('DAS39211'))
-    graph.get_rack('C1_3').assignSKU(0,2,2,get_key('DVG39226'))
-    graph.get_rack('J2_0').assignSKU(0,1,2,get_key('CSSS40082C'))
+    graph.get_rack('C1_3').assignSKU(0,2,2,get_key('CSSP40090C')) ##
+    graph.get_rack('J2_0').assignSKU(0,1,2,get_key('CSSS40082C')) ##
     graph.get_rack('J1_5').assignSKU(0,3,2,get_key('DVG39226'))
     graph.get_rack('N1_5').assignSKU(0,0,0,get_key('DVG39226'))
     graph.get_rack('K1_1').assignSKU(0,1,2,get_key('DVG39226'))
     graph.get_rack('V_0').assignSKU(0,1,0,get_key('DAS39211'))
-    graph.get_rack('C2_1').assignSKU(0,1,2,get_key('CSSS70051C'))
+    graph.get_rack('C2_1').assignSKU(0,1,2,get_key('CSSS70051C')) ##
     graph.get_rack('U_1').assignSKU(0,1,0,get_key('DVG39226'))
     graph.get_rack('U_7').assignSKU(0,2,0,get_key('DHW39214'))
     graph.get_rack('K1_4').assignSKU(0,1,2,get_key('CSSP40091C'))
@@ -456,24 +456,37 @@ if __name__ == "__main__":
     # print(SKU_map[134].associationList)
     # print(SKU_map[134].velocity)
     # print(SKU_map[134].weight)
-    objtocheck = SKU_map[87]
-    # print(objtocheck.weight, objtocheck.velocity, objtocheck.associationList)
-    start = timeit.timeit()
-    fittest_location(graph, SKU_map[87], dijkstra_map)
-    end = timeit.timeit()
+    
+    objtocheck = SKU_map[134] #CSSS40081C
+    
+    print(objtocheck.UID, objtocheck.weight, objtocheck.velocity, objtocheck.associationList)
+    # 0.43860816474440456 1.058272336325717
+    # 'CSSS40082C', 'CSSP40090C', 'CSSS40080C', 'CSSS70051C']
+    start = time.time()
+    
+    fittest_location(graph, SKU_map[134], dijkstra_map) # ('G2_3', (0, 2, 2))
+    # 2.4073031245567362, 0.03412704649834447, CSCIC35320
+    # ['CSSS40082C', 'CSSS60060C', 'DAS37321', 'CSSS60050C']
+    fittest_location(graph, SKU_map[114], dijkstra_map)
+    fittest_location(graph, SKU_map[33], dijkstra_map)
+    fittest_location(graph, SKU_map[13], dijkstra_map)
+    # ('G2_3', (0, 2, 2))
+    # ('A_7', (0, 2, 0))
+    # ('A_0', (0, 0, 0))
+    # ('C1_3', (0, 1, 2))
+    # fittest_location(graph, SKU_map[14], dijkstra_map)
+    # fittest_location(graph, SKU_map[100], dijkstra_map)
+    # fittest_location(graph, SKU_map[110], dijkstra_map)
+    
+    # ('C1_3', (0, 1, 2)) for 13
+    # 
+    # ('G2_3', (0, 2, 2)) for 134
+    # CSCIC35320,  2.4073031245567362,  0.03412704649834447 ['CSSS40082C', 'CSSS60060C', 'DAS37321', 'CSSS60050C']
+    
+    end = time.time()
     print(end-start)
-    # print(str(SKU_map[120].weight))
-    # print(str(graph.get_rack('W_6').distToOB))
-   
     
-    # add 0.21626637359240555 to all velocities 
-        
-    # print(get_weight_score(SKU_map[34], 1, graph.get_rack('A_0').rackLocations))
-          
-
-    # fidelitone_slotting(graph, CSSS70051C_obj, dijkstra_map)
     
-    # start = time.time()
 
     
     

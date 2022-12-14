@@ -470,25 +470,24 @@ def dijkstra_trace_path(graph, start_to_use, goal_to_use, track_pred):
 # def shortest_dist_path(graph, start, goal):
 #     return find_path(graph, start, goal)
 
-def dist_inb_helper_fitness(num):
-    num = random.randint(10, 75)
-    return num
+# def dist_inb_helper_fitness(num):
+#     
+#     return num
 
-def dist_inb_helper_fidel(num):
-    num = random.randint(10, 53)
-    return num
+# def dist_inb_helper_fidel(num):
+#     
+#     return num
 
-def dist_outb_pick_helper(num):
-    num = random.randint(20, 85)
-    return num
+# def 
+#     return num
 
-def dist_subsequent_picks_fitness_helper(num):
-    num = random.randint(10, 40)
-    return num
+# def dist_subsequent_picks_fitness_helper(num):
+#     
+#     return num
 
-def dist_subsequent_picks_fidel_helper(num):
-    num = random.randint(15, 50)
-    return num
+# def dist_subsequent_picks_fidel_helper(num):
+#     
+#     return num
     
 
 # @jit(nopython=True)
@@ -527,22 +526,22 @@ def get_first_last_orientations(graph, path): # the optimal path
     return exit_orientation, entry_orientation
 
 
-def find_dist_to_inb_fitness(sku):
-    to_return = dist_inb_helper_fitness(sku) #since there are large number of items being slotted close tp OB
-    return to_return
+# def find_dist_to_inb_fitness(sku):
+#     to_return = dist_inb_helper_fitness(sku) #since there are large number of items being slotted close tp OB
+#     return to_return
 
-def find_dist_to_inb_fidel(sku):
-    to_return = dist_inb_helper_fidel(sku)
-    return to_return
+# def find_dist_to_inb_fidel(sku):
+#     to_return = dist_inb_helper_fidel(sku)
+#     return to_return
 
-def find_pick_dist_ob(sku):
-    to_return = dist_outb_pick_helper(sku)
-    return to_return
+# def find_pick_dist_ob(sku):
+#     to_return = dist_outb_pick_helper(sku)
+#     return to_return
 
-def find_dist_subsequent_picks_fitness(sku):
-    to_return = dist_subsequent_picks_fitness_helper(sku)
-    return to_return
+# def find_dist_subsequent_picks_fitness(sku):
+#     to_return = dist_subsequent_picks_fitness_helper(sku)
+#     return to_return
 
-def find_dist_subsequent_picks_fidel(sku):
-    to_return = dist_subsequent_picks_fidel_helper(sku)
-    return to_return
+# def find_dist_subsequent_picks_fidel(sku):
+#     to_return = dist_subsequent_picks_fidel_helper(sku)
+#     return to_return
