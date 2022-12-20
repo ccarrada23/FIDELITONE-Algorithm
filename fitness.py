@@ -193,7 +193,25 @@ def association_function_helper(graph, start_rack, start_loc, path_start_goal):
     
     return cost_to_exit_start
             
-            
+# fitness helper, extra implementation for slotting rules
+
+def check_depth_levels(rack_mesh, location):
+        
+    rack_to_check = rack_mesh
+    (d, r, c) = location
+    status_list = []
+    sku_at_loc = rack_to_check[d][r][c]
+        
+    for depth_idx in range(len(rack_to_check)):
+        if rack_to_check[depth_idx][r][c] == sku_at_loc or rack_to_check[depth_idx][r][c] == 0:
+            status_list.append("True")
+        else:
+            status_list.append("False")
+                
+    if status_list.count("False") > 0:
+        return False
+    else:
+        return True           
                    
 # @jit(nopython=True)     
        
@@ -224,6 +242,9 @@ def fittest_location(graph, sku_to_putaway, dijkstra_dict):
                     if rack_mesh[depth_idx][row_idx][col_idx] == 0: # free location in the mesh
                        
                         location = (depth_idx, row_idx, col_idx)
+                        
+                        if check_depth_levels(rack_mesh, location) == False:
+                            continue
                         
                         distance_same = 0
                         #HANDLING EXCEPTIONS FOR DIST TO SAME FUNC
@@ -269,18 +290,34 @@ def fittest_location(graph, sku_to_putaway, dijkstra_dict):
                         +  (1/(distance_same) + 1) 
                         + sku_fitness_at_loc 
                         
-                        fitness_values[(curr_rack.UID, location)] = fitness_at_loc_for_sku
+                        fitness_values[(curr_rack.UID, location, sku_to_putaway.UID)] = fitness_at_loc_for_sku
     max_value = max(fitness_values, key=fitness_values.get)
-    print(max_value)
-
-
-
-
     
-
-
+    height_from_bottom = len(graph.get_rack(max_value[0]).rackLocations[0][0] - 1) - max_value[1][1] + 1
     
+    print("fittest location for " + str(sku_to_putaway.UID) +" is: " + str(max_value[0]) + ", at " 
+          + "depth level: " + str(max_value[1][0] + 1) 
+          + ", height: " + str(height_from_bottom)
+          + ", column: " + str(max_value[1][2] + 1))
 
+##0 (max_ind - value +1) =height from bottom
+##1 @
+##2
+##3
+##4 
+##5 
+##6 @
+## function for batch slotting for SKUs
 
-            
-           
+def slot_sku_batch(graph, skus_to_slot, dijkstra_dict):
+    
+    for sku in skus_to_slot:
+        curr_sku_to_putaway = sku
+        
+        fittest_slots = []
+        fittest_slots.append(fittest_location(graph, curr_sku_to_putaway, dijkstra_dict))
+        
+    print(fittest_slots)
+        
+        
+                  

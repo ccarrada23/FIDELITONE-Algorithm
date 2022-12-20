@@ -457,38 +457,51 @@ if __name__ == "__main__":
     # print(SKU_map[134].velocity)
     # print(SKU_map[134].weight)
     
-    objtocheck = SKU_map[134] #CSSS40081C
+    # objtocheck = SKU_map[134] #CSSS40081C
     
-    print(objtocheck.UID, objtocheck.weight, objtocheck.velocity, objtocheck.associationList)
-    # 0.43860816474440456 1.058272336325717
-    # 'CSSS40082C', 'CSSP40090C', 'CSSS40080C', 'CSSS70051C']
-    start = time.time()
+    # print(objtocheck.UID, objtocheck.weight, objtocheck.velocity, objtocheck.associationList)
+    # # 0.43860816474440456 1.058272336325717
+    # # 'CSSS40082C', 'CSSP40090C', 'CSSS40080C', 'CSSS70051C']
+    # start = time.time()
     
-    fittest_location(graph, SKU_map[134], dijkstra_map) # ('G2_3', (0, 2, 2))
+    # fittest_location(graph, SKU_map[134], dijkstra_map) # ('G2_3', (0, 2, 2))
+    
     # 2.4073031245567362, 0.03412704649834447, CSCIC35320
+    
     # ['CSSS40082C', 'CSSS60060C', 'DAS37321', 'CSSS60050C']
-    fittest_location(graph, SKU_map[114], dijkstra_map)
-    fittest_location(graph, SKU_map[33], dijkstra_map)
-    fittest_location(graph, SKU_map[13], dijkstra_map)
+    
+    # fittest_location(graph, SKU_map[114], dijkstra_map)
+    # fittest_location(graph, SKU_map[33], dijkstra_map)
+    # fittest_location(graph, SKU_map[13], dijkstra_map)
+    
     # ('G2_3', (0, 2, 2))
     # ('A_7', (0, 2, 0))
     # ('A_0', (0, 0, 0))
     # ('C1_3', (0, 1, 2))
     # fittest_location(graph, SKU_map[14], dijkstra_map)
     # fittest_location(graph, SKU_map[100], dijkstra_map)
-    # fittest_location(graph, SKU_map[110], dijkstra_map)
+    fittest_location(graph, SKU_map[198], dijkstra_map)
     
     # ('C1_3', (0, 1, 2)) for 13
-    # 
-    # ('G2_3', (0, 2, 2)) for 134
-    # CSCIC35320,  2.4073031245567362,  0.03412704649834447 ['CSSS40082C', 'CSSS60060C', 'DAS37321', 'CSSS60050C']
     
-    end = time.time()
-    print(end-start)
+#     rack_mesh = graph.get_rack('M1_1').rackLocations
     
-    
-
-    
-    
-    
-    
+#     def check_depth_levels(rack_mesh, location):
+        
+#         rack_to_check = rack_mesh
+#         (d, r, c) = location
+#         status_list = []
+#         sku_at_loc = rack_to_check[d][r][c]
+        
+#         for depth_idx in range(len(rack_to_check)):
+#             if rack_to_check[depth_idx][r][c] == sku_at_loc or rack_to_check[depth_idx][r][c] == 0:
+#                     status_list.append("True")
+#             else:
+#                 status_list.append("False")
+                
+#         if status_list.count("False") > 0:
+#             return False
+#         else:
+#             return True
+        
+# print(check_depth_levels(rack_mesh, (1,1,1)))
