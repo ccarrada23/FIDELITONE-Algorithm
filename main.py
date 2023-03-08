@@ -7,10 +7,11 @@ import numpy as np
 from sku_generator import *
 from bad_slotting_algo import *
 from simulate import *
-
+from processing_locations import *
 import json_io
 import timeit
 import time
+from fid_receiving import *
 
 def create_json_file(graph):
     keys = []
@@ -23,6 +24,7 @@ def create_json_file(graph):
         track_preds.append(track_pred)
 
     json_io.save_to_json("dikjstra.json", keys, shortest_dists, track_preds)    
+
 
 if __name__ == "__main__":
     graph = Graph()
@@ -51,7 +53,7 @@ if __name__ == "__main__":
     create_single_column(graph, 8, "L2_", 1, 5, 3, True)
     
     create_double_column(graph, 13, "M1_", "N1_", 2, 4, 2)
-    create_double_column(graph, 12, "M2_", "N2_", 2, 4, 2)
+    create_double_column(graph, 13, "M2_", "N2_", 2, 4, 2)
     
     create_double_column(graph, 9, "O1_", "P1_", 1, 5, 3)
     create_double_column(graph, 8, "O2_", "P2_", 1, 5, 3)
@@ -121,13 +123,13 @@ if __name__ == "__main__":
     graph.add_edge(graph.get_rack('M1_0'), graph.get_rack('L1_0'), 2)
     graph.add_edge(graph.get_rack('L1_8'), graph.get_rack('M1_12'), 2)
     graph.add_edge(graph.get_rack('M2_0'), graph.get_rack('L2_0'), 2)
-    graph.add_edge(graph.get_rack('L2_7'), graph.get_rack('M2_11'), 2)
+    graph.add_edge(graph.get_rack('L2_7'), graph.get_rack('M2_12'), 2)
 
     # 2 weight edges among Ns and Os
     graph.add_edge(graph.get_rack('O1_0'), graph.get_rack('N1_0'), 2)
     graph.add_edge(graph.get_rack('N1_12'), graph.get_rack('O1_8'), 2)
     graph.add_edge(graph.get_rack('O2_0'), graph.get_rack('N2_0'), 2)
-    graph.add_edge(graph.get_rack('N2_11'), graph.get_rack('O2_7'), 2)
+    graph.add_edge(graph.get_rack('N2_12'), graph.get_rack('O2_7'), 2)
 
     # 2 weight edges among Ps and Qs
     graph.add_edge(graph.get_rack('Q1_0'), graph.get_rack('P1_0'), 2)
@@ -280,8 +282,8 @@ if __name__ == "__main__":
     graph.add_edge(graph.get_rack('Inbound'), graph.get_rack('P2_7'), 6)
     graph.add_edge(graph.get_rack('O2_7'), graph.get_rack('Inbound'), 6)
     
-    graph.add_edge(graph.get_rack('M2_11'), graph.get_rack('Inbound'), 5)
-    graph.add_edge(graph.get_rack('Inbound'), graph.get_rack('N2_11'), 5)
+    graph.add_edge(graph.get_rack('M2_12'), graph.get_rack('Inbound'), 5)
+    graph.add_edge(graph.get_rack('Inbound'), graph.get_rack('N2_12'), 5)
     
     graph.add_edge(graph.get_rack('K2_7'), graph.get_rack('Inbound'), 6)
     graph.add_edge(graph.get_rack('Inbound'), graph.get_rack('L2_7'), 6)
@@ -290,7 +292,7 @@ if __name__ == "__main__":
     shortest_dist, track_pred = dijkstra_helper(graph, graph.get_rack('Outbound'))
     for node in shortest_dist.keys():
         # scaled_z_rack = get_rack_z_OB(graph.get_rack(node))
-        graph.get_rack(node).distToOB = ((shortest_dist[node] - MEAN_DISTANCE_FROM_OUTBOUND)/STD_DEV_DISTANCE_OUTBOUND) + + 2.308369718955168
+        graph.get_rack(node).distToOB = ((shortest_dist[node] - MEAN_DISTANCE_FROM_OUTBOUND)/STD_DEV_DISTANCE_OUTBOUND) + 2.308369718955168
         
         
     shortest_dist, track_pred = dijkstra_helper(graph, graph.get_rack('Inbound'))
@@ -301,8 +303,23 @@ if __name__ == "__main__":
     ########
     # SKUs to be assigned for simulation
     
-    
-    
+    ### simple function for assigning SKUs:
+    def assigningSKUs(graph, converted_data):
+        
+        for assignment in converted_data:
+            
+            rack_name = assignment[0]
+            depth = 0
+            row = assignment[1]
+            column = assignment[2]
+            SKUid = assignment[3]
+            
+            graph.get_rack(rack_name).assignSKU(depth, row, int(column), get_key(SKUid))
+            
+    # assigningSKUs(graph, )
+            
+            
+    '''
     graph.get_rack('E1_0').assignSKU(0,2,1,get_key('EA30520')) # EA00703 assoc
     graph.get_rack('W_6').assignSKU(0,2,1,get_key('EA30520')) # EA00703 assoc
     graph.get_rack('W_3').assignSKU(0,2,2,get_key('EA30520')) # EA00703 assoc
@@ -363,7 +380,7 @@ if __name__ == "__main__":
     graph.get_rack('D1_3').assignSKU(0,0,2,get_key('CS42212'))
     graph.get_rack('A_12').assignSKU(0,0,0,get_key('CSDVG70034'))
     graph.get_rack('K1_0').assignSKU(0,1,2,get_key('DVG39226'))
-    
+    '''
     # graph.get_rack('W_6').assignSKU(0,1,1,get_key('EA30520'))
     # graph.get_rack('W_6').assignSKU(0,0,1,get_key('EA30520'))
     # graph.get_rack('W_6').assignSKU(0,0,0,get_key('EA30520'))
@@ -416,6 +433,7 @@ if __name__ == "__main__":
     
     # create_json_file(graph)
     dijkstra_map = json_io.load_from_json("dikjstra.json")
+    
     # print(distance_to_most_assoc_sku_locs(graph, graph.get_rack('M1_3'), (0,2,1), DVG39226_obj, dijkstra_map['M1_3'][0], dijkstra_map['M1_3'][1]))
     # print(DVG39226_obj.associationList)
     # fittest_location(graph, DVG39226_obj, dijkstra_map)
@@ -480,28 +498,114 @@ if __name__ == "__main__":
     # ('C1_3', (0, 1, 2))
     # fittest_location(graph, SKU_map[14], dijkstra_map)
     # fittest_location(graph, SKU_map[100], dijkstra_map)
-    fittest_location(graph, SKU_map[198], dijkstra_map)
+    # fittest_location(graph, SKU_map[161], dijkstra_map)
+    # print("assoc = " + str(SKU_map[161].associationList))
+    # print("weight = " + str(SKU_map[161].weight))
+    # print("velocity = " + str(SKU_map[161].velocity))
     
+    # fittest_location(graph, SKU_map[86], dijkstra_map)
+    
+    # print("assoc = " + str(SKU_map[86].associationList))
+    # print("weight = " + str(SKU_map[86].weight))
+    # print("velocity = " + str(SKU_map[86].velocity))
+    rows_num = (len(graph.get_rack('W_7').rackLocations[0]))
+    
+    # print(test_SKUlocs)
+        
+    # locations_to_assign = translate_locations_graph(test_SKUlocs, graph)
+    # print(locations_to_assign)
+    # a = (20.0, 1.0, 'BB', 2.0, 'CS41212')
+    # print(bay_map(a))
+    
+    # wrong: [['P2_7', 4, 2], ['P2_6', 4, 2], ['P2_5', 4, 2], ['P2_4', 4, 2], ['P2_3', 4, 2]]
+    # right: [(9, 7, 'AA', 1)], 2: [(9, 7, 'AA', 2)], 3: [(9, 7, 'AA', 3)], 4: [(9, 7, 'BB', 1)]
+    # counter1 = 3
+    # for index in SKU_locations:
+    #     print(SKU_locations[index])
+    #     counter1 -= 1
+    #     if counter1 == 0:
+    #         break
+        
+    # print(test_SKUlocs[1][0])
+    # print(SKU_locations[13][0])
+    # print(SKU_locations[875][0])
+    # map_to_get = bay_map(SKU_locations[875][0])
+    # print(map_to_get)
     # ('C1_3', (0, 1, 2)) for 13
     
-#     rack_mesh = graph.get_rack('M1_1').rackLocations
+    # print((SKU_map[565]))
+    # 565 skus in the sku map
     
-#     def check_depth_levels(rack_mesh, location):
+    all_SKU_IDS = []
+    
+    for index in SKU_map:
+        if index == 0:
+            continue
+        all_SKU_IDS.append(SKU_map[index].UID)
         
-#         rack_to_check = rack_mesh
-#         (d, r, c) = location
-#         status_list = []
-#         sku_at_loc = rack_to_check[d][r][c]
         
-#         for depth_idx in range(len(rack_to_check)):
-#             if rack_to_check[depth_idx][r][c] == sku_at_loc or rack_to_check[depth_idx][r][c] == 0:
-#                     status_list.append("True")
-#             else:
-#                 status_list.append("False")
+    locs_to_slot = []   
+    
+    for index in SKUs_to_slot:
+        if index == 0:
+            continue
+        locs_to_slot.append(SKUs_to_slot[index])   
+    
+    
+    def unique(list1):
+     
+        # initialize a null list
+        unique_list = []
+        
+        # traverse for all elements
+        for x in list1:
+            # check if exists in unique_list or not
+            if x not in unique_list:
+                unique_list.append(x)
+        
+        return unique_list
+    
+    # print(len(unique(locs_to_check)))
+            
+    list_to_slot = unique(locs_to_slot)
+
+
+    neeed = []
+    for SKU_item in list_to_slot:
+        curr_SKU = SKU_item
+        for SKU_item in all_SKU_IDS:
+            if curr_SKU == SKU_item: 
+                neeed.append(curr_SKU) # this will only have the SKUs that the main SKU_map has
+            
+    need1 = unique(neeed) # this will giv
+    # print(len(neeed))
+    # print(len(list_to_work_with))
+    
+    
+    common_skus = []
+    
+    for sku_id in list_to_slot:
+        sku = sku_id
+        # print(sku)
+        for index in SKU_map:
+            if index == 0:
+                continue
+            # print(SKU_map[index])
+            if sku == SKU_map[index].UID:
+                common_skus.append(sku)
                 
-#         if status_list.count("False") > 0:
-#             return False
-#         else:
-#             return True
+    
+    one_not_two = set(list_to_slot).difference(common_skus) #print 1 and 4
+    # print(one_not_two)
         
-# print(check_depth_levels(rack_mesh, (1,1,1)))
+    slot_locs = []
+    slot_locs = translate_locations_graph(SKU_locations, graph)    
+    assigningSKUs(graph, slot_locs)
+    
+    # need data for these SKUs: {'EA59103', 'CS10529', 'EA56503', 'EA58103', 'EA57603', 'EA58503', 'EA56603'} to run algorithm
+    slot_sku_batch(graph, locs_to_slot, dijkstra_map)
+    # a = dijkstra_map['M2_12']
+    # print(a)
+    # for item in dijkstra_map:
+    #     print(dijkstra_map[item])
+    

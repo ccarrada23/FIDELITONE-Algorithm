@@ -257,29 +257,34 @@ def dist_from_outbound_zscore(graph, curr_rack, predecessors):
      
         
 def get_velocity_score(sku, rack):
-    
-    z_vel = sku.velocity
+    key = get_key(sku)
+    z_vel = SKU_map[key].velocity
     z_rack = rack.distToOB # rackScore stores the +ve values for distances to outbound
-    
+
     if z_vel > VELOCITY_PERCENTILE_75:
         if z_rack > RACK_OB_PERCENTILE_75:
             velocity_score = 0
         if z_rack <= RACK_OB_PERCENTILE_75 and z_rack >= RACK_OB_PERCENTILE_25:
-            velocity_score = abs(z_vel - z_rack)
+            velocity_score = abs(z_vel + (1/z_rack)) 
         if z_rack < RACK_OB_PERCENTILE_25:
-            velocity_score = abs(z_vel + (2*(1/z_rack)))
+            velocity_score = abs(z_vel + (3/z_rack)) # 0.7 + (2*(1/1.40), = 2.12
             
-    if z_vel < VELOCITY_PERCENTILE_25:
+    if z_vel < VELOCITY_PERCENTILE_25: # slow mover
         if z_rack < RACK_OB_PERCENTILE_25:
             velocity_score = 0 # slow movers when stored close
-        if z_rack >= RACK_OB_PERCENTILE_25:
-            velocity_score = abs(z_vel + z_rack)
+        if z_rack <= RACK_OB_PERCENTILE_75 and z_rack >= RACK_OB_PERCENTILE_25:
+            velocity_score = z_vel + abs(1 - (1/(abs(z_vel - z_rack)))) 
+        if z_rack > RACK_OB_PERCENTILE_75:
+            velocity_score = (3/abs(z_vel - z_rack) + 3*z_vel)
+            # here slower item must have bigger fitness than slow item
     
     if z_vel >= VELOCITY_PERCENTILE_25 and z_vel <= VELOCITY_PERCENTILE_75:
-        if z_rack >= RACK_OB_PERCENTILE_25 and z_rack <= RACK_OB_PERCENTILE_75 or z_rack <= RACK_OB_PERCENTILE_25:
-            velocity_score = abs(z_vel + 2*z_rack)
-        if z_rack >= RACK_OB_PERCENTILE_75:
-            velocity_score = abs(z_vel - 0.5*z_rack)
+        if z_rack >= RACK_OB_PERCENTILE_25 and z_rack <= RACK_OB_PERCENTILE_75:
+            velocity_score = abs(z_vel + (3/z_rack))
+        if z_rack < RACK_OB_PERCENTILE_25:
+            velocity_score = abs(z_vel + 1*z_rack)
+        if z_rack > RACK_OB_PERCENTILE_75:
+            velocity_score = 2/(abs(z_vel + z_rack)) + z_vel
             
     return velocity_score
     
@@ -333,7 +338,7 @@ def get_weight_zscore(sku):
 
 def get_weight_score(sku, row_idx, rack_mesh): 
      # TODO:: need to scale weight scores to all positive by adding the absolute of the most negative thing
-    weight = sku.weight # can either be positive or negative
+    weight = SKU_map[get_key(sku)].weight # can either be positive or negative
     
     # new weight scores, everything is scaled to be positive
     if weight > WEIGHT_PERCENTILE_75:

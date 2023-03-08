@@ -14,13 +14,13 @@ import numpy as np
 
 # from SKUClass import SKU
 
-class SKU:
-    def __init__(self, UID, weight, velocity, associationList):
-        self.UID = UID
-        self.weight = weight # in units
-        self.velocity = velocity # frequency of pick in a given period 
-        # volume maybe? per tray/unit in the pallet 
-        self.associationList = associationList # list of items it is associated with along with association values
+# class SKU:
+#     def __init__(self, UID, weight, velocity, associationList):
+#         self.UID = UID
+#         self.weight = weight # in units
+#         self.velocity = velocity # frequency of pick in a given period 
+#         # volume maybe? per tray/unit in the pallet 
+#         self.associationList = associationList # list of items it is associated with along with association values
         
 
 
@@ -76,19 +76,19 @@ class RackLayout: # looks like [ [][][], [][][], [][][], [][][] ]
 #     def addNeighbor(self):
 #         pass
 
-SKU001 = SKU("001", 40, 60, [])
-SKU002 = SKU("002", 32, 87, [])
-SKU003 = SKU("003", 22, 12, [])
-SKU004 = SKU("004", 76, 47, [])
-SKU005 = SKU("005", 76, 47, [])
-SKU006 = SKU("006", 76, 47, [])
+# SKU001 = SKU("001", 40, 60, [])
+# SKU002 = SKU("002", 32, 87, [])
+# SKU003 = SKU("003", 22, 12, [])
+# SKU004 = SKU("004", 76, 47, [])
+# SKU005 = SKU("005", 76, 47, [])
+# SKU006 = SKU("006", 76, 47, [])
 
-int_to_SKUMap = {
-    0 : None,
-    1 : SKU001,
-    2 : SKU002,
-    3 : SKU003,
-    4 : SKU004,
-    5 : SKU005,
-    6 : SKU006
-}
+# int_to_SKUMap = {
+#     0 : None,
+#     1 : SKU001,
+#     2 : SKU002,
+#     3 : SKU003,
+#     4 : SKU004,
+#     5 : SKU005,
+#     6 : SKU006
+# }

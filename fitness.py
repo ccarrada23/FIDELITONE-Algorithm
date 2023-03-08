@@ -2,6 +2,7 @@ from distanceFunction import *
 from SKUClass import *
 from classes import *
 import random
+from slotLocation_format import *
 # @jit(nopython=True)
 
 def exception_same_ass(start_location, goal_location):
@@ -14,12 +15,15 @@ def dist_to_closest_same_sku_loc(graph, rack_for_loc ,location, sku_to_putaway, 
     
     start_rack = rack_for_loc
     start_loc = location
-    locs_of_input_sku = sku_to_putaway.findSKU(graph)
+    locs_of_input_sku = SKU_map[get_key(sku_to_putaway)].findSKU(graph)
     distances = []
     
     # path_start_goal = None
     
     for goal_rack_loc in locs_of_input_sku:
+        
+        if goal_rack_loc[0].UID == 'M2_12' or goal_rack_loc[0].UID == 'N2_12': #TODO
+            continue
         
         distance = 0
         
@@ -89,11 +93,13 @@ def distance_to_most_assoc_sku_locs(graph, rack_for_loc ,location, sku_to_putawa
     start_rack = rack_for_loc
     start_loc = location
     
-    locs_of_assoc_sku = sku_to_putaway.findAssocSKUlocs(graph) 
+    locs_of_assoc_sku = SKU_map[get_key(sku_to_putaway)].findAssocSKUlocs(graph) 
     
     # path_start_goal = None
     
     for goal_rack_loc in locs_of_assoc_sku:
+        if goal_rack_loc[0].UID == "M2_12" or goal_rack_loc[0].UID == "N2_12":
+            continue
         
         # you need to have a function here that accepts different locations of the start rack
         # so the function will take those locations in fitness and keep changing the start_loc 
@@ -203,15 +209,15 @@ def check_depth_levels(rack_mesh, location):
     sku_at_loc = rack_to_check[d][r][c]
         
     for depth_idx in range(len(rack_to_check)):
-        if rack_to_check[depth_idx][r][c] == sku_at_loc or rack_to_check[depth_idx][r][c] == 0:
-            status_list.append("True")
-        else:
+        if rack_to_check[depth_idx][r][c] == sku_at_loc or rack_to_check[depth_idx][r][c] == 0: #  same sku at a different depth level or no skus at depth levels
+            status_list.append("True") # means true we can continue finding fitness
+        else: 
             status_list.append("False")
                 
-    if status_list.count("False") > 0:
-        return False
+    if status_list.count("False") > 0: # even 1 false in status list means there another item at a different depth level
+        return False # dont try to find fitness
     else:
-        return True           
+        return True # keep trying to find fitness     
                    
 # @jit(nopython=True)     
        
@@ -221,10 +227,16 @@ def fittest_location(graph, sku_to_putaway, dijkstra_dict):
     graph = graph
     
     for rack in graph.racksDict:
-        if rack == "E2_0" or rack == "E2_4" or rack == "E3_2" or rack == "M1_4":
+        if rack == "E2_0" or rack == "E2_4" or rack == "E3_2" or rack == "M1_4" or rack == "M2_12" or rack == "N2_12" or rack == "Inbound" or rack == "Outbound" or rack[0] == 'X':
             continue
         curr_rack = graph.get_rack(rack)
         rack_mesh = curr_rack.rackLocations
+        
+        ##
+        velocity_score_for_sku = get_velocity_score(sku_to_putaway, curr_rack)
+        if velocity_score_for_sku == 0:
+            continue
+        ## 
         
         shortest_dist, predecessors = dijkstra_dict[rack]
         distance_to_closest_same_sku_loc_OR_goal_loc, start_orien_same = dist_to_closest_same_sku_loc(graph, curr_rack, (0, 0, 0), sku_to_putaway, predecessors, shortest_dist) 
@@ -234,8 +246,8 @@ def fittest_location(graph, sku_to_putaway, dijkstra_dict):
             for row_idx in range(len(rack_mesh[0])):
                 
                 weight_score_for_sku = get_weight_score(sku_to_putaway, row_idx, rack_mesh)
-                if weight_score_for_sku == 0:
-                    continue
+                # if weight_score_for_sku == 0:
+                #     continue
                 
                 for col_idx in range(len(rack_mesh[0][0])):
                 
@@ -276,7 +288,7 @@ def fittest_location(graph, sku_to_putaway, dijkstra_dict):
                         # cost_to_exit_start_same = dist_closest_same_helper(graph, path_start_goal_1, curr_rack, location)
                         # cost_to_exit_start_same = cost_to_exit_enter_rack(curr_rack, location, start_orien_same)
                         
-                        velocity_score_for_sku = get_velocity_score(sku_to_putaway, curr_rack)
+                        # velocity_score_for_sku = get_velocity_score(sku_to_putaway, curr_rack)
                         
                         sku_fitness_at_loc = velocity_score_for_sku + weight_score_for_sku
                         
@@ -290,34 +302,45 @@ def fittest_location(graph, sku_to_putaway, dijkstra_dict):
                         +  (1/(distance_same) + 1) 
                         + sku_fitness_at_loc 
                         
-                        fitness_values[(curr_rack.UID, location, sku_to_putaway.UID)] = fitness_at_loc_for_sku
-    max_value = max(fitness_values, key=fitness_values.get)
+                        fitness_values[(curr_rack.UID, location, sku_to_putaway)] = fitness_at_loc_for_sku
+    max_value = max(fitness_values, key=fitness_values.get) # this gives the key with max value
+    # key will look like this ('A_1', (0,1,0), 'CSFG32DF')
     
-    height_from_bottom = len(graph.get_rack(max_value[0]).rackLocations[0][0] - 1) - max_value[1][1] + 1
+    graph.get_rack(max_value[0]).assignSKU(max_value[1][0], max_value[1][1], max_value[1][2], get_key(sku_to_putaway))
     
-    print("fittest location for " + str(sku_to_putaway.UID) +" is: " + str(max_value[0]) + ", at " 
-          + "depth level: " + str(max_value[1][0] + 1) 
-          + ", height: " + str(height_from_bottom)
-          + ", column: " + str(max_value[1][2] + 1))
+    height_from_bottom = len(graph.get_rack(max_value[0]).rackLocations[0]) - max_value[1][1] 
+    
+    fid_row_bay = alg_to_fidel[max_value[0]] # this will give you something like (6, 19)
+    fid_level = row_to_fidel[height_from_bottom]
+    
+    if max_value[0][0] == 'A' or max_value[0][0] == 'D' or max_value[0][0] == 'F' or max_value[0][0] == 'H' or max_value[0][0] == 'J' or max_value[0][0] == 'L' or max_value[0][0] == 'N' or max_value[0][0] == 'P' or max_value[0][0] == 'R' or max_value[0][0] == 'T' or max_value[0][0] == 'V':
+        fid_spot = max_value[1][2] + 1
+    else:
+        fid_spot = len(graph.get_rack(max_value[0]).rackLocations[0][0]) - max_value[1][2]
+    
+    print('NW' + str(fid_row_bay[0]) + str(fid_row_bay[1]) + str(fid_level) + str(fid_spot))
+    
+    # print("Fittest location for " + str(sku_to_putaway) +" is: " + str(max_value[0]) + ", at " 
+    #       + "depth level: " + str(max_value[1][0] + 1) 
+    #       + ", height: " + str(height_from_bottom)
+    #       + ", column: " + str(max_value[1][2] + 1))
 
-##0 (max_ind - value +1) =height from bottom
-##1 @
-##2
-##3
-##4 
-##5 
-##6 @
-## function for batch slotting for SKUs
 
 def slot_sku_batch(graph, skus_to_slot, dijkstra_dict):
-    
+    counter = 0
     for sku in skus_to_slot:
+        # counter += 1
+        # if counter < 29:
+        #     continue
+        # if sku == 'EA50120' or sku == 'EA50220' or sku == 'EA50420' or sku == 'EA50320' or sku == 'EA51120' or sku == 'EA42112' or sku == 'EA42112' or sku == 'EA51220':
+        #     continue
+        
         curr_sku_to_putaway = sku
+        if curr_sku_to_putaway == 'EA59103' or curr_sku_to_putaway == 'CS10529' or curr_sku_to_putaway == 'EA56503' or curr_sku_to_putaway == 'EA58103' or curr_sku_to_putaway == 'EA57603' or curr_sku_to_putaway == 'EA58503' or curr_sku_to_putaway == 'EA56603':
+            continue 
         
         fittest_slots = []
         fittest_slots.append(fittest_location(graph, curr_sku_to_putaway, dijkstra_dict))
         
+        
     print(fittest_slots)
-        
-        
-                  
