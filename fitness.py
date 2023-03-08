@@ -209,7 +209,6 @@ def check_depth_levels(rack_mesh, location):
     sku_at_loc = rack_to_check[d][r][c]
         
     for depth_idx in range(len(rack_to_check)):
-<<<<<<< HEAD
         if rack_to_check[depth_idx][r][c] == sku_at_loc or rack_to_check[depth_idx][r][c] == 0: #  same sku at a different depth level or no skus at depth levels
             status_list.append("True") # means true we can continue finding fitness
         else: 
@@ -219,17 +218,6 @@ def check_depth_levels(rack_mesh, location):
         return False # dont try to find fitness
     else:
         return True # keep trying to find fitness     
-=======
-        if rack_to_check[depth_idx][r][c] == sku_at_loc or rack_to_check[depth_idx][r][c] == 0:
-            status_list.append("True")
-        else:
-            status_list.append("False")
-                
-    if status_list.count("False") > 0:
-        return False
-    else:
-        return True           
->>>>>>> c33a05d36f5370a959c5dfc28192883fff0b2ccf
                    
 # @jit(nopython=True)     
        
@@ -347,7 +335,6 @@ def fittest_location(graph, sku_to_putaway, dijkstra_dict):
 ## function for batch slotting for SKUs
 
 def slot_sku_batch(graph, skus_to_slot, dijkstra_dict):
-<<<<<<< HEAD
     counter = 0
     for sku in skus_to_slot:
         # counter += 1
@@ -359,21 +346,9 @@ def slot_sku_batch(graph, skus_to_slot, dijkstra_dict):
         curr_sku_to_putaway = sku
         if curr_sku_to_putaway == 'EA59103' or curr_sku_to_putaway == 'CS10529' or curr_sku_to_putaway == 'EA56503' or curr_sku_to_putaway == 'EA58103' or curr_sku_to_putaway == 'EA57603' or curr_sku_to_putaway == 'EA58503' or curr_sku_to_putaway == 'EA56603':
             continue 
-=======
-    
-    for sku in skus_to_slot:
-        curr_sku_to_putaway = sku
->>>>>>> c33a05d36f5370a959c5dfc28192883fff0b2ccf
         
         fittest_slots = []
         fittest_slots.append(fittest_location(graph, curr_sku_to_putaway, dijkstra_dict))
         
-<<<<<<< HEAD
         
     print(fittest_slots)
-=======
-    print(fittest_slots)
-        
-        
-                  
->>>>>>> c33a05d36f5370a959c5dfc28192883fff0b2ccf
