@@ -318,37 +318,29 @@ def fittest_location(graph, sku_to_putaway, dijkstra_dict):
     else:
         fid_spot = len(graph.get_rack(max_value[0]).rackLocations[0][0]) - max_value[1][2]
     
-    print('NW' + str(fid_row_bay[0]) + str(fid_row_bay[1]) + str(fid_level) + str(fid_spot))
+    location_for_SKU = ('NW' + " " + str(fid_row_bay[0]) + " " + str(fid_row_bay[1]) + " " + str(fid_level) + " " + '0' + str(fid_spot))
     
-    # print("Fittest location for " + str(sku_to_putaway) +" is: " + str(max_value[0]) + ", at " 
-    #       + "depth level: " + str(max_value[1][0] + 1) 
-    #       + ", height: " + str(height_from_bottom)
-    #       + ", column: " + str(max_value[1][2] + 1))
+    to_return = (sku_to_putaway, location_for_SKU)
+    
+    print(str(sku_to_putaway) + " --> " + str(location_for_SKU))
+    
+    return to_return
 
-##0 (max_ind - value +1) =height from bottom
-##1 @
-##2
-##3
-##4 
-##5 
-##6 @
-## function for batch slotting for SKUs
 
 def slot_sku_batch(graph, skus_to_slot, dijkstra_dict):
     counter = 0
+    fittest_slots = []
     for sku in skus_to_slot:
         # counter += 1
-        # if counter < 29:
-        #     continue
-        # if sku == 'EA50120' or sku == 'EA50220' or sku == 'EA50420' or sku == 'EA50320' or sku == 'EA51120' or sku == 'EA42112' or sku == 'EA42112' or sku == 'EA51220':
-        #     continue
+        # if counter == 4:
+        #     break
         
         curr_sku_to_putaway = sku
         if curr_sku_to_putaway == 'EA59103' or curr_sku_to_putaway == 'CS10529' or curr_sku_to_putaway == 'EA56503' or curr_sku_to_putaway == 'EA58103' or curr_sku_to_putaway == 'EA57603' or curr_sku_to_putaway == 'EA58503' or curr_sku_to_putaway == 'EA56603':
             continue 
         
-        fittest_slots = []
+        # fittest_slots = []
         fittest_slots.append(fittest_location(graph, curr_sku_to_putaway, dijkstra_dict))
         
         
-    print(fittest_slots)
+    # print(fittest_slots)

@@ -4,7 +4,7 @@ from classes import Graph
 # SKU_locations = {0: None}
 
 def read_from_excel():
-    df = pd.read_excel("./Fid-InventoryByLocation.xlsx")
+    df = pd.read_excel("./Fid-InventoryByLocation_updated.xlsx")
     SKU_locations = {0: None}
     i = 1
     for index, row in df.iterrows():
@@ -14,11 +14,12 @@ def read_from_excel():
 
 SKU_locations = read_from_excel()
 
-test_SKUlocs = {0: None,
-                1: SKU_locations[875],
-                2: SKU_locations[876],
-                3: SKU_locations[877],
-                4: SKU_locations[878]}
+
+# test_SKUlocs = {0: None,
+#                 1: SKU_locations[875],
+#                 2: SKU_locations[876],
+#                 3: SKU_locations[877],
+#                 4: SKU_locations[878]}
            
 # what you need from A : [(2, 1, 'BB', 2)]
 # A[0] = needs to translate to the correct row 
@@ -491,33 +492,33 @@ def find_row_and_spot(rack_name, graph, SKU_location): # (1, 2, AA, 2) its being
     return row_idx_toreturn, col_idx_toreturn
 
 
-def translate_locations_graph(SKU_locs, graph):
+# def translate_locations_graph(SKU_locs, graph):
     
-    # SKU_locs = SKU_locations
-    translated_locations = []
-    # you wanna say that if the next iteratoin has the same number in row as the last one use the
-    # same graph_dict
-    # but if not, we will call bay_map again and create an appropriate graph
-    # every loc_index has a location stored in [(row, bay, level, spot)] structure
-    # you want to say if the new loc index stores the same row that the previous loc_index 
-    # don't call bay_map, use the grpah dict that was created for the last loc idex exlplored
-    # you only call bay_map for the indices that don't have the same row stored in the previous loc index 
-    for loc_index in SKU_locs:
-        # loc_prev = loc_index - 1
-        if loc_index == 0:
-            # one_SKU_location[0] == 16 or one_SKU_location[0] == 15 or one_SKU_location[0] == 6 or one_SKU_location[0] == 5 or one_SKU_location[0] == 4 or one_SKU_location[0] == 3 or one_SKU_location[0] == 2 or one_SKU_location[0] == 1:
-            continue
-        loc_prev = loc_index - 1
+#     # SKU_locs = SKU_locations
+#     translated_locations = []
+#     # you wanna say that if the next iteratoin has the same number in row as the last one use the
+#     # same graph_dict
+#     # but if not, we will call bay_map again and create an appropriate graph
+#     # every loc_index has a location stored in [(row, bay, level, spot)] structure
+#     # you want to say if the new loc index stores the same row that the previous loc_index 
+#     # don't call bay_map, use the grpah dict that was created for the last loc idex exlplored
+#     # you only call bay_map for the indices that don't have the same row stored in the previous loc index 
+#     for loc_index in SKU_locs:
+#         # loc_prev = loc_index - 1
+#         if loc_index == 0:
+#             # one_SKU_location[0] == 16 or one_SKU_location[0] == 15 or one_SKU_location[0] == 6 or one_SKU_location[0] == 5 or one_SKU_location[0] == 4 or one_SKU_location[0] == 3 or one_SKU_location[0] == 2 or one_SKU_location[0] == 1:
+#             continue
+#         loc_prev = loc_index - 1
         
-        graph_dict = bay_map(SKU_locs[loc_index][0]) # this dictionary contains the information that translates the [0] index 'row' and [1] index 'bay'
+#         graph_dict = bay_map(SKU_locs[loc_index][0]) # this dictionary contains the information that translates the [0] index 'row' and [1] index 'bay'
         
-        rack_index = SKU_locs[loc_index][0][1]
-        correct_rack = graph_dict[rack_index] # get correct rack here
+#         rack_index = SKU_locs[loc_index][0][1]
+#         correct_rack = graph_dict[rack_index] # get correct rack here
         
-        row_idx, col_index = find_row_and_spot(correct_rack, graph, SKU_locs[loc_index][0])
-        translated_locations.append([correct_rack, row_idx, col_index])
+#         row_idx, col_index = find_row_and_spot(correct_rack, graph, SKU_locs[loc_index][0])
+#         translated_locations.append([correct_rack, row_idx, col_index])
         
-    return translated_locations
+#     return translated_locations
 
 # TODO: make more efficient by not generating a new map every row.
 # TODO: 

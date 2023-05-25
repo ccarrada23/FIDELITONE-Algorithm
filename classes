@@ -1,303 +1,305 @@
-from ast import Assign
-from decimal import ROUND_HALF_DOWN
-from ntpath import join
-from plistlib import UID
-# from selectors import EpollSelector
-from tkinter import Entry
-from pyparsing import col
-from SKUClass import SKUMap
-from location import SKU002, RackLayout
-from enum import Enum
-import numpy as np
+# from ast import Assign
+# from decimal import ROUND_HALF_DOWN
+# from ntpath import join
+# from plistlib import UID
+# # from selectors import EpollSelector
+# from tkinter import Entry
+# from pyparsing import col
+# from SKUClass import SKUMap
+# from location import SKU002, RackLayout
+# from enum import Enum
+# import numpy as np
 
 
-HORIZONAL_COEFF = 1
-VERTICAL_COEFF = 1
-DEPTH_COEFF = 1
+# HORIZONAL_COEFF = 1
+# VERTICAL_COEFF = 1
+# DEPTH_COEFF = 1
 
-class EntryOrientation(Enum):
-    LEFT2RIGHT = 0
-    RIGHT2LEFT = 1
+# class EntryOrientation(Enum):
+#     LEFT2RIGHT = 0
+#     RIGHT2LEFT = 1
     
 
-# say A2 is 4*3; 4 rows and 3 columns
-# if you arrive at A2 from the left edge {1}, you are at the bottom row and first col => at [3][0]
-# in general, arrival from LEFT at any rack with layout (i,j) => you arrive at index [i-1][0]
-# also, arrival from RIGHT at any rack with layout (i,j) => you arrive at index [i-1][j-1]
-# an edge always connects left side of a rack with the right side of a rack
-class Edge:
-    def __init__(self, rack1, rack2, type, weight = -1):
-        self.rack1 = rack1
-        self.rack2 = rack2
-        self.type = type # either LEFT2RIGHT or RIGHT2LEFT
-        self.weight = weight
+# # say A2 is 4*3; 4 rows and 3 columns
+# # if you arrive at A2 from the left edge {1}, you are at the bottom row and first col => at [3][0]
+# # in general, arrival from LEFT at any rack with layout (i,j) => you arrive at index [i-1][0]
+# # also, arrival from RIGHT at any rack with layout (i,j) => you arrive at index [i-1][j-1]
+# # an edge always connects left side of a rack with the right side of a rack
+# class Edge:
+#     def __init__(self, rack1, rack2, type, weight = -1):
+#         self.rack1 = rack1
+#         self.rack2 = rack2
+#         self.type = type # either LEFT2RIGHT or RIGHT2LEFT
+#         self.weight = weight
         
-    def changeEdge(self, frm, to, type):
-        edge = Edge(None, None, None, None)
-        edge = self
-        edge.type = type
-        edge.rack1 = frm
-        edge.rack2 = to
+#     def changeEdge(self, frm, to, type):
+#         edge = Edge(None, None, None, None)
+#         edge = self
+#         edge.type = type
+#         edge.rack1 = frm
+#         edge.rack2 = to
         
-    def get_edge_details(self):
-        racklayout1 = self.rack1.rackLocations
-        racklayout2 = self.rack2.rackLocations
+#     def get_edge_details(self):
+#         racklayout1 = self.rack1.rackLocations
+#         racklayout2 = self.rack2.rackLocations
         
-        indexDepart = None
-        indexArrive = None
+#         indexDepart = None
+#         indexArrive = None
         
-        if self.type == EntryOrientation.RIGHT2LEFT: # exited using Right side of rack1, entered using Left side of rack2
-            dep_idx_dpt = 0
-            row_idx_dpt = len(racklayout1[0]) - 1 # len(rackLayout) gives number of depths,
-            col_idx_dpt = len(racklayout1[0][0]) - 1
+#         if self.type == EntryOrientation.RIGHT2LEFT: # exited using Right side of rack1, entered using Left side of rack2
+#             dep_idx_dpt = 0
+#             row_idx_dpt = len(racklayout1[0]) - 1 # len(rackLayout) gives number of depths,
+#             col_idx_dpt = len(racklayout1[0][0]) - 1
             
-            indexDepart = (dep_idx_dpt, row_idx_dpt, col_idx_dpt)
+#             indexDepart = (dep_idx_dpt, row_idx_dpt, col_idx_dpt)
             
-            dep_idx_arr = 0            
-            row_idx_arr = len(racklayout2[0]) - 1
-            col_idx_arr = 0
-            indexArrive = (dep_idx_arr, row_idx_arr, col_idx_arr)
+#             dep_idx_arr = 0            
+#             row_idx_arr = len(racklayout2[0]) - 1
+#             col_idx_arr = 0
+#             indexArrive = (dep_idx_arr, row_idx_arr, col_idx_arr)
             
-            print("index used to leave rack1: " + str(indexDepart))
-            print("index used to enter rack2: " + str(indexArrive))
-            # logic is to 
+#             print("index used to leave rack1: " + str(indexDepart))
+#             print("index used to enter rack2: " + str(indexArrive))
+#             # logic is to 
             
-        else: # EntryOrientation.LEFT2RIGHT
-            dep_idx_arr = 0
-            row_idx_arr = len(racklayout1[0]) - 1 
-            col_idx_arr = len(racklayout1[0][0]) - 1
-            indexArrive = (row_idx_arr, col_idx_arr)
+#         else: # EntryOrientation.LEFT2RIGHT
+#             dep_idx_arr = 0
+#             row_idx_arr = len(racklayout1[0]) - 1 
+#             col_idx_arr = len(racklayout1[0][0]) - 1
+#             indexArrive = (row_idx_arr, col_idx_arr)
                         
-            dep_idx_dpt = 0
-            col_idx_dpt = 0
-            row_idx_dpt = len(racklayout2[0]) - 1
-            indexDepart = (dep_idx_dpt, row_idx_dpt, col_idx_dpt) 
+#             dep_idx_dpt = 0
+#             col_idx_dpt = 0
+#             row_idx_dpt = len(racklayout2[0]) - 1
+#             indexDepart = (dep_idx_dpt, row_idx_dpt, col_idx_dpt) 
                            
-            print("index used to leave rack2: " + str(indexDepart))
-            print("index used to enter rack1: " + str(indexArrive))
+#             print("index used to leave rack2: " + str(indexDepart))
+#             print("index used to enter rack1: " + str(indexArrive))
             
                       
-class Rack:
-    def __init__(self, 
-                 UID,
-                 rackLocations,
-                 adjacent = list()): #a list of adjacent edges
-        self.UID = UID
-        self.rackLocations = rackLocations # given as RackLayout(i,j).createMatrix()
-        self.adjacent = adjacent # this iterable list
+# class Rack:
+#     def __init__(self, 
+#                  UID,
+#                  rackLocations,
+#                  adjacent = list()): #a list of adjacent edges
+#         self.UID = UID
+#         self.rackLocations = rackLocations # given as RackLayout(i,j).createMatrix()
+#         self.adjacent = adjacent # this iterable list
         
-    def __str__(self):
-        return str(self.UID) + ' has edges: ' + str([x.rack1.UID + " -> " + x.rack2.UID for x in self.adjacent])
+#     def __str__(self):
+#         return str(self.UID) + ' has edges: ' + str([x.rack1.UID + " -> " + x.rack2.UID for x in self.adjacent])
     
-    def add_connecting_edge(self, edge):
-        self.adjacent.append(edge)
+#     def add_connecting_edge(self, edge):
+#         self.adjacent.append(edge)
     
-    def get_object(self):
-        rack = self
-        return rack
+#     def get_object(self):
+#         rack = self
+#         return rack
     
-    def get_connections(self):  
-        edges = []
-        for edge in self.adjacent:
-            edges.append(edge)
-        return edges
+#     def get_connections(self):  
+#         edges = []
+#         for edge in self.adjacent:
+#             edges.append(edge)
+#         return edges
            
-    def get_id(self):
-        return self.UID
+#     def get_id(self):
+#         return self.UID
     
-    def assignSKU(self, depthInd,rowInd, colInd, SKUkey): # we fill deeper levels first while assigning SKUs
-        mesh = self.rackLocations
-        mesh[depthInd][rowInd][colInd] = SKUkey
+#     def assignSKU(self, depthInd,rowInd, colInd, SKUkey): # we fill deeper levels first while assigning SKUs
+#         mesh = self.rackLocations
+#         mesh[depthInd][rowInd][colInd] = SKUkey
         
-        assert self.assignLogic() == True
+#         assert self.assignLogic() == True
         
-        
-    def assignLogic(self):
-        mesh = self.rackLocations
-        depth_to_check = len(mesh) - 1 # index number of depth to check for all keys at every [row][col]
-        for dep_idx in range(len(mesh) - 1):
-            for row_idx in range(len(mesh[0])):
-                for col_idx in range(len(mesh[0][0])):
-                    if mesh[dep_idx][row_idx][col_idx] != 0 and mesh[dep_idx][row_idx][col_idx] != mesh[depth_to_check][row_idx][col_idx]:
-                        return False
-        return True
+#     def assignLogic(self):
+#         mesh = self.rackLocations
+#         depth_to_check = len(mesh) - 1 # index number of depth to check for all keys at every [row][col]
+#         for dep_idx in range(len(mesh) - 1):
+#             for row_idx in range(len(mesh[0])):
+#                 for col_idx in range(len(mesh[0][0])):
+#                     if mesh[dep_idx][row_idx][col_idx] != 0 and mesh[dep_idx][row_idx][col_idx] != mesh[depth_to_check][row_idx][col_idx]:
+#                         return False
+#         return True
         
                      
-    def get_rack_details(self):
-        for edge in self.adjacent:
-            print(str(self.UID) + " has an edge of type: " + str(edge.type) + ", and weight: " + str(edge.weight))
+#     def get_rack_details(self):
+#         for edge in self.adjacent:
+#             print(str(self.UID) + " has an edge of type: " + str(edge.type) + ", and weight: " + str(edge.weight))
         
-    def countSKU(self, sku): # going to call this function like countSKU(1, rack1)
-        sku_key = sku
-        # sku_obj = SKUMap[sku_key]
-        sku_count = 0
-        for depth in range(len(self.rackLocations)):
-            for row in range(len(self.rackLocations[0])):
-                for col in range(len(self.rackLocations[0][0])):
-                    if self.rackLocations[depth][row][col] == sku_key:
-                        sku_count = sku_count + 1
-        return sku_count
+#     def countSKU(self, sku): # going to call this function like countSKU(1, rack1)
+#         sku_key = sku
+#         # sku_obj = SKUMap[sku_key]
+#         sku_count = 0
+#         for depth in range(len(self.rackLocations)):
+#             for row in range(len(self.rackLocations[0])):
+#                 for col in range(len(self.rackLocations[0][0])):
+#                     if self.rackLocations[depth][row][col] == sku_key:
+#                         sku_count = sku_count + 1
+#         return sku_count
 
-    def adjList(self):
+#     def adjList(self):
 
-        rack_list = list() # should contain [['!=rack, weight], [!=rack, weight],  ] n(subarrays) = n(edges) for that rack
-        rack_num_edges = len(self.adjacent) # can be either 2 or bigger than 2 
+#         rack_list = list() # should contain [['!=rack, weight], [!=rack, weight],  ] n(subarrays) = n(edges) for that rack
+#         rack_num_edges = len(self.adjacent) # can be either 2 or bigger than 2 
         
-        if rack_num_edges == 2: # it is a middle rack
+#         if rack_num_edges == 2: # it is a middle rack
             
-            for edge in self.adjacent:
-                if edge.rack1 != self:
-                    rack_list.append((edge.rack1, edge.weight, EntryOrientation.LEFT2RIGHT))
-                else:
-                    rack_list.append((edge.rack2, edge.weight, edge.type))
+#             for edge in self.adjacent:
+#                 if edge.rack1 != self:
+#                     rack_list.append((edge.rack1, edge.weight, EntryOrientation.LEFT2RIGHT))
+#                 else:
+#                     rack_list.append((edge.rack2, edge.weight, edge.type))
         
-        if rack_num_edges == 3:
-            frm_edges = []
-            # if you have 3 edges, you can belong to one of two categories depending on number of from and to edges you have 
-            for edge in self.adjacent:
-                if edge.rack1 ==  self:
-                    frm_edges.append(0)
+#         if rack_num_edges == 3:
+#             frm_edges = []
+#             # if you have 3 edges, you can belong to one of two categories depending on number of from and to edges you have 
+#             for edge in self.adjacent:
+#                 if edge.rack1 ==  self:
+#                     frm_edges.append(0)
                     
-            if len(frm_edges) == 2:
-                for edge in self.adjacent:
-                    if edge.weight == 2:
-                        rack_list.append((edge.rack1, edge.weight, EntryOrientation.LEFT2RIGHT))
-                    if edge.weight == 3:
-                        rack_list.append((edge.rack2, edge.weight, EntryOrientation.LEFT2RIGHT))
-                    if edge.weight == 1:
-                        rack_list.append((edge.rack2, edge.weight, EntryOrientation.RIGHT2LEFT))
+#             if len(frm_edges) == 2:
+#                 for edge in self.adjacent:
+#                     if edge.weight == 2:
+#                         rack_list.append((edge.rack1, edge.weight, EntryOrientation.LEFT2RIGHT))
+#                     if edge.weight == 3:
+#                         rack_list.append((edge.rack2, edge.weight, EntryOrientation.LEFT2RIGHT))
+#                     if edge.weight == 1:
+#                         rack_list.append((edge.rack2, edge.weight, EntryOrientation.RIGHT2LEFT))
             
-            else:
-                for edge in self.adjacent:
-                    if edge.weight == 1:
-                        rack_list.append((edge.rack1, edge.weight, EntryOrientation.LEFT2RIGHT))
-                    if edge.weight == 2:
-                        rack_list.append((edge.rack2, edge.weight, EntryOrientation.RIGHT2LEFT))
-                    if edge.weight == 3:
-                        rack_list.append((edge.rack1, edge.weight, EntryOrientation.RIGHT2LEFT))
-        return rack_list          
+#             else:
+#                 for edge in self.adjacent:
+#                     if edge.weight == 1:
+#                         rack_list.append((edge.rack1, edge.weight, EntryOrientation.LEFT2RIGHT))
+#                     if edge.weight == 2:
+#                         rack_list.append((edge.rack2, edge.weight, EntryOrientation.RIGHT2LEFT))
+#                     if edge.weight == 3:
+#                         rack_list.append((edge.rack1, edge.weight, EntryOrientation.RIGHT2LEFT))
+#         return rack_list          
                              
        
-class Graph:
-    def __init__(self):
-        self.racksDict = {}
-        self.num_racks = 0
+# class Graph:
+#     def __init__(self):
+#         self.racksDict = {}
+#         self.num_racks = 0
         
-    def __iter__(self):
-        return iter(self.racksDict.values())
+#     def __iter__(self):
+#         return iter(self.racksDict.values())
     
-    def add_rack(self, rack_toAdd): # adds racka nd return added rack
-        self.num_racks += 1
-        newRack = rack_toAdd
-        self.racksDict[rack_toAdd] = newRack
-        return newRack
+#     def add_rack(self, rack_toAdd): # adds racka nd return added rack
+#         self.num_racks += 1
+#         newRack = rack_toAdd
+#         self.racksDict[rack_toAdd] = newRack
+#         return newRack
 
-    def get_vertex(self, rack): # return rack object if rack is part of racksDict: the dict that stores the graph, g
-        if rack in self.racksDict:
-            return self.racksDict[rack]
-        else:
-            return None
+#     def get_vertex(self, rack): # return rack object if rack is part of racksDict: the dict that stores the graph, g
+#         if rack in self.racksDict:
+#             return self.racksDict[rack]
+#         else:
+#             return None
         
-    def add_edge(self, frm, to, cost = 0):
-        if frm not in self.racksDict:
-            self.add_rack(frm)
-        if to not in self.racksDict:
-            self.add_rack(to)
+#     def add_edge(self, frm, to, cost = 0):
+#         if frm not in self.racksDict:
+#             self.add_rack(frm)
+#         if to not in self.racksDict:
+#             self.add_rack(to)
         
-        e1 = Edge(frm, to, EntryOrientation.RIGHT2LEFT, cost)
-        # e2 = Edge(frm, to, EntryOrientation.RIGHT2LEFT, cost)
-        self.racksDict[frm].add_connecting_edge(e1)
-        self.racksDict[to].add_connecting_edge(e1)
+#         e1 = Edge(frm, to, EntryOrientation.RIGHT2LEFT, cost)
+#         # e2 = Edge(frm, to, EntryOrientation.RIGHT2LEFT, cost)
+#         self.racksDict[frm].add_connecting_edge(e1)
+#         self.racksDict[to].add_connecting_edge(e1)
         
-    def edge_rack_orien(self):
-        racks = self.racksDict
-        for rack in racks:
-            for edge in rack.get_connections():
-                print("edge is from " + edge.rack1.UID + " to " + edge.rack2.UID + ". COST = " + str(edge.weight))
-                edge.get_edge_details()
+#     def edge_rack_orien(self):
+#         racks = self.racksDict
+#         for rack in racks:
+#             for edge in rack.get_connections():
+#                 print("edge is from " + edge.rack1.UID + " to " + edge.rack2.UID + ". COST = " + str(edge.weight))
+#                 edge.get_edge_details()
                 
-"""
-n = node()
-n.adjacent() == [Edge1, Edge2,...]
-for (edge : n.adjacent):
-    if (edge.rack1 == n):
-        going_to = edge.orientation
-    else:
-        going_to = opposite of edge.orientation
+
+            
+                
+# """
+# n = node()
+# n.adjacent() == [Edge1, Edge2,...]
+# for (edge : n.adjacent):
+#     if (edge.rack1 == n):
+#         going_to = edge.orientation
+#     else:
+#         going_to = opposite of edge.orientation
         
-"""
-# 3 racks to add
-# rack1 = Rack('A1', RackLayout(3,4,3).createMesh(), [])  # R = 
-# rack2 = Rack('A2', RackLayout(2,6,6).createMesh(), [])
-# rack3 = Rack('A3', RackLayout(1,4,3).createMesh(), [])
-# rack4 = Rack('A4', RackLayout(1,4,3).createMesh(), [])
+# """
+# # 3 racks to add
+# # rack1 = Rack('A1', RackLayout(3,4,3).createMesh(), [])  # R = 
+# # rack2 = Rack('A2', RackLayout(2,6,6).createMesh(), [])
+# # rack3 = Rack('A3', RackLayout(1,4,3).createMesh(), [])
+# # rack4 = Rack('A4', RackLayout(1,4,3).createMesh(), [])
 
-# # graph called g
-# g = Graph()
+# # # graph called g
+# # g = Graph()
 
-# # racks being added to the graph
-# g.add_rack(rack1)
-# g.add_rack(rack2)
-# g.add_rack(rack3)
-# g.add_rack(rack4)
+# # # racks being added to the graph
+# # g.add_rack(rack1)
+# # g.add_rack(rack2)
+# # g.add_rack(rack3)
+# # g.add_rack(rack4)
 
-# # edges being added to the graph
-# g.add_edge(rack1, rack2, 1)
-# g.add_edge(rack2, rack3, 2)
-# g.add_edge(rack2, rack4, 5)  
-# g.add_edge(rack4, rack1, 8)
+# # # edges being added to the graph
+# # g.add_edge(rack1, rack2, 1)
+# # g.add_edge(rack2, rack3, 2)
+# # g.add_edge(rack2, rack4, 5)  
+# # g.add_edge(rack4, rack1, 8)
 
 
-# # edge1_1 = Edge(rack1, rack2, "2->1")
+# # # edge1_1 = Edge(rack1, rack2, "2->1")
 
-# rack1.assignSKU(2, 1, 2, 4) # 0 is the depth index, 1 is the row index, 2 is col index, 4 corresponds to the SKU object which maps to int=4
-# rack1.assignSKU(2, 1, 1, 6) # position(0,1,1) stores SKU that maps to 6.
+# # rack1.assignSKU(2, 1, 2, 4) # 0 is the depth index, 1 is the row index, 2 is col index, 4 corresponds to the SKU object which maps to int=4
+# # rack1.assignSKU(2, 1, 1, 6) # position(0,1,1) stores SKU that maps to 6.
 
-# # assign SKU implementation needs to change. Since Fidelitone has a rule that all depth must contain the same SKU
-# # if you assign a SKU to an n-deep rack, you must maintain same SKUs at every depth for that rack. 
-# # i must assert in the assign SKU function that if an assignment to a slot has been made, that same slot at different depths is blocked for the same SKU
+# # # assign SKU implementation needs to change. Since Fidelitone has a rule that all depth must contain the same SKU
+# # # if you assign a SKU to an n-deep rack, you must maintain same SKUs at every depth for that rack. 
+# # # i must assert in the assign SKU function that if an assignment to a slot has been made, that same slot at different depths is blocked for the same SKU
 
-# # for depth in mesh:
-#     # # now you have one face/level of depth you are dealing with. => matrix only
-#     # currDepth = depth
-#     # for eachFace in len(depth):
-#     #     if eachFace == currDepth:
+# # # for depth in mesh:
+# #     # # now you have one face/level of depth you are dealing with. => matrix only
+# #     # currDepth = depth
+# #     # for eachFace in len(depth):
+# #     #     if eachFace == currDepth:
     
-# mesh_1 = rack1.rackLocations # mesh has the depth, row, col of rack1
-# # you want to go to every depth, mesh[i], check if mesh[i] == mesh[j] for every j not equal to i
-# # for depthLevel in mesh:
-# #     curr = depthLevel # curr equals the first depth level inside the mesh
-# #     for depthIndex in range(len(mesh)): # depth index will take values 0 first and then 1
-# #         print(curr == mesh[depthIndex])
+# # mesh_1 = rack1.rackLocations # mesh has the depth, row, col of rack1
+# # # you want to go to every depth, mesh[i], check if mesh[i] == mesh[j] for every j not equal to i
+# # # for depthLevel in mesh:
+# # #     curr = depthLevel # curr equals the first depth level inside the mesh
+# # #     for depthIndex in range(len(mesh)): # depth index will take values 0 first and then 1
+# # #         print(curr == mesh[depthIndex])
         
-# # print(np.array_equal(mesh[0], mesh[1]))
-# # print(len(mesh_1)) 
+# # # print(np.array_equal(mesh[0], mesh[1]))
+# # # print(len(mesh_1)) 
 
-# edge_dict = {}
-# # for edge in rack1.get_connections():
-# #     edge_dict[edge] = edge.weight
-# # print(edge_dict)  
+# # edge_dict = {}
+# # # for edge in rack1.get_connections():
+# # #     edge_dict[edge] = edge.weight
+# # # print(edge_dict)  
 
-# # for edge in rack1.get_connections():
-# #     print("edge is from = " + edge.rack1.UID + " & is to = " + edge.rack2.UID) 
+# # # for edge in rack1.get_connections():
+# # #     print("edge is from = " + edge.rack1.UID + " & is to = " + edge.rack2.UID) 
     
-# # for edge in rack1.get_connections():
-# #     print("edge is from " + edge.rack1.UID + " to " + edge.rack2.UID)
-# #     edge.get_edge_details()
+# # # for edge in rack1.get_connections():
+# # #     print("edge is from " + edge.rack1.UID + " to " + edge.rack2.UID)
+# # #     edge.get_edge_details()
 
-# # print("edge is frm = " + rack1.get_connections()[0].rack1.UID + " & is to = " + rack1.get_connections()[0].rack2.UID)
-# # print
-# # g.edge_rack_orien()
-# # for depth in rack1.rackLocations:
-# #     # print(depth)
+# # # print("edge is frm = " + rack1.get_connections()[0].rack1.UID + " & is to = " + rack1.get_connections()[0].rack2.UID)
+# # # print
+# # # g.edge_rack_orien()
+# # # for depth in rack1.rackLocations:
+# # #     # print(depth)
         
 
-# # if sku assignment to any level does not match what is deeper, return false
-# # if on another depth, the same keys must contain either 0 or same thing that the keys in last_depth_dict contain
+# # # if sku assignment to any level does not match what is deeper, return false
+# # # if on another depth, the same keys must contain either 0 or same thing that the keys in last_depth_dict contain
 
 
-# # print(rack1.rackLocations)
-# # rack1.assignSKU(0, 1, 1, 6)
+# # # print(rack1.rackLocations)
+# # # rack1.assignSKU(0, 1, 1, 6)
 
 
         

@@ -544,12 +544,12 @@ if __name__ == "__main__":
         all_SKU_IDS.append(SKU_map[index].UID)
         
         
-    locs_to_slot = []   
+    SKUS_that_need_fittest = []   
     
     for index in SKUs_to_slot:
         if index == 0:
             continue
-        locs_to_slot.append(SKUs_to_slot[index])   
+        SKUS_that_need_fittest.append(SKUs_to_slot[index])   
     
     
     def unique(list1):
@@ -567,45 +567,86 @@ if __name__ == "__main__":
     
     # print(len(unique(locs_to_check)))
             
-    list_to_slot = unique(locs_to_slot)
+    # unique_need_fitness = unique(SKUS_that_need_fittest)
 
 
-    neeed = []
-    for SKU_item in list_to_slot:
-        curr_SKU = SKU_item
-        for SKU_item in all_SKU_IDS:
-            if curr_SKU == SKU_item: 
-                neeed.append(curr_SKU) # this will only have the SKUs that the main SKU_map has
+    # neeed = []
+    # for SKU_item in list_to_slot:
+    #     curr_SKU = SKU_item
+    #     for SKU_item in all_SKU_IDS:
+    #         if curr_SKU == SKU_item: 
+    #             neeed.append(curr_SKU) # this will only have the SKUs that the main SKU_map has
             
-    need1 = unique(neeed) # this will giv
+    # need1 = unique(neeed) # this will giv
     # print(len(neeed))
     # print(len(list_to_work_with))
     
     
-    common_skus = []
+    # common_needFit_map = []
     
-    for sku_id in list_to_slot:
-        sku = sku_id
-        # print(sku)
-        for index in SKU_map:
-            if index == 0:
-                continue
-            # print(SKU_map[index])
-            if sku == SKU_map[index].UID:
-                common_skus.append(sku)
+    # for sku_id in unique_need_fitness:
+    #     sku = sku_id
+    #     # print(sku)
+    #     for index in SKU_map:
+    #         if index == 0:
+    #             continue
+    #         # print(SKU_map[index])
+    #         if sku == SKU_map[index].UID:
+    #             common_needFit_map.append(sku)
                 
+    # # print(common_skus)
+    # # print(get_key('CSSS30056C12'))
+    # # print(get_key('CSS35222'))
     
-    one_not_two = set(list_to_slot).difference(common_skus) #print 1 and 4
+    # one_not_two = set(unique_need_fitness).difference(common_needFit_map) #print 1 and 4
     # print(one_not_two)
+    
+    # for sku in SKUS_that_need_fittest:
+    #     print(get_key(sku))
+    
         
-    slot_locs = []
-    slot_locs = translate_locations_graph(SKU_locations, graph)    
-    assigningSKUs(graph, slot_locs)
     
+    # slot_locs = []
+    # slot_locs = translate_locations_graph(SKU_locations, graph)   # what is currently inside the facility
+    # assigningSKUs(graph, slot_locs)
+    
+    # print(SKUs_to_slot[1])
+    # print(SKUs_to_slot[2])
+        
     # need data for these SKUs: {'EA59103', 'CS10529', 'EA56503', 'EA58103', 'EA57603', 'EA58503', 'EA56603'} to run algorithm
-    slot_sku_batch(graph, locs_to_slot, dijkstra_map)
-    # a = dijkstra_map['M2_12']
-    # print(a)
-    # for item in dijkstra_map:
-    #     print(dijkstra_map[item])
+    # slot_sku_batch(graph, test_list, dijkstra_map)
     
+    # counter11 = 3
+    # for rack in graph.racksDict:
+    #     print(rack)
+    #     print(graph.get_rack(rack).rackLocations)
+    #     counter11 -= 1
+    #     if counter11 == 0:
+    #         break
+    
+    
+    # graph.clear_graph()
+    
+    # counter11 = 3
+    # for rack in graph.racksDict:
+    #     print(rack)
+    #     print(graph.get_rack(rack).rackLocations)
+    #     counter11 -= 1
+    #     if counter11 == 0:
+    #         break
+    
+    
+    
+    
+    
+    
+    
+    
+    ######################################FIDELITONE##########################################
+    
+    # ALWAYS CALL THE FUNCTIONS BELOW IN THIS ORDER:
+    
+    # 1) graph.clear_graph()
+    # 2) slot_locs = translate_locations_graph(SKU_locations, graph)
+    # 2) assigningSKUs(graph, slot_locs)
+    # 3) slot_sku_batch(graph, SKUS_that_need_fittest, dijkstra_map)

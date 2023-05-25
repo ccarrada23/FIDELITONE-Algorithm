@@ -356,7 +356,6 @@ class Graph:
         # return dict_for_rack
             
                 
-        
     
     def delete_edge(self, frm, to):
         i = 0
@@ -390,6 +389,22 @@ class Graph:
         
         pass
     
+    def clear_graph(self):
+        racks = self.racksDict
+        
+        for rack_name in racks:
+            rack_obj = self.get_rack(rack_name)
+            rack_mesh = rack_obj.rackLocations
+            
+            for dep_idx in range(len(rack_mesh)):
+                for row_idx in range(len(rack_mesh[0])):
+                    for col_idx in range(len(rack_mesh[0][0])):
+                        
+                        rack_mesh[dep_idx][row_idx][col_idx] = 0
+                        
+            
+            
+            
     # def __getitem__(self, key):
     #     return self.racksDict[key]
 """
